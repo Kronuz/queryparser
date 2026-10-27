@@ -238,7 +238,6 @@ enum class mark : std::uint8_t { none, plus, minus };
 
 // Internal flag of a re-read: a double quote is punctuation.
 constexpr std::uint32_t plain_quotes = 1u << 31;
-constexpr std::uint32_t plain_brackets = 1u << 30;
 
 // A thing in a group of juxtaposed items. n == no_node is a dropped stop word, which still
 // counts as an operand.
@@ -370,8 +369,8 @@ private:
 	const char* step(const char* p) {
 		const char c = *p;
 		if (c == '"' && phrase() && !has(plain_quotes)) { return quoted(p); }
-		if (c == '(' && !has(plain_brackets) && (boolean() || pending_ != mark::none)) { return open_frame(p); }
-		if (c == ')' && !has(plain_brackets) && (boolean() || frames_.size() > 1)) {
+		if (c == '(' && (boolean() || pending_ != mark::none)) { return open_frame(p); }
+		if (c == ')' && (boolean() || frames_.size() > 1)) {
 			ket_ = true;
 			if (frames_.size() > 1) {
 				close_frame(p + 1);
@@ -1196,7 +1195,7 @@ private:
 		}
 		std::vector<node_id> req, opt, exc;
 		const bool all_required = default_op_ == kind::and_;
-		if ((cfg_.stopper || !boolean()) && !demote) {
+		if (cfg_.stopper && !demote) {
 			// Exclusions need a positive item that is no stop word.
 			bool hate = false, solid = false;
 			for (std::size_t i = first; i < end; ++i) {
@@ -1333,7 +1332,7 @@ parse_result parse(std::string_view text, const config& cfg) {
 		if (first.needs_reparse()) {
 			// Plain words: no operators and no expansion.
 			config plain = cfg;
-			plain.flags |= plain_quotes | plain_brackets;
+			plain.flags |= plain_quotes;
 			plain.flags &= ~(flag::lovehate | flag::boolean | flag::wildcard | flag::partial | flag::fuzzy | flag::wildcard_single | flag::wildcard_multi);
 			res = parse_result{};
 			parser(text, plain, res).run();
