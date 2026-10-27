@@ -1,6 +1,7 @@
 // queryparser_vectors parse.jsonl [EXCEPTIONS.md]: runs the oracle rows (query, flags,
 // stem, description, error) through parse() and prints matched, excepted, failed and
 // skipped rows. A row is skipped when it needs a flag or setting not implemented yet.
+#include "jsonl.hh"
 #include "queryparser.hh"
 
 #include <cstdio>
@@ -12,50 +13,6 @@
 #include <string>
 
 namespace {
-
-// One flat JSON object of string values; strings keep their decoded UTF-8.
-std::map<std::string, std::string> row(const std::string& line) {
-	std::map<std::string, std::string> m;
-	const char* p = line.c_str();
-	auto str = [&] {
-		std::string s;
-		for (++p; *p != '"'; ++p) {
-			if (*p != '\\') {
-				s += *p;
-				continue;
-			}
-			switch (*++p) {
-				case 'n': s += '\n'; break;
-				case 't': s += '\t'; break;
-				case 'r': s += '\r'; break;
-				case 'u': {
-					char32_t c = char32_t(std::strtoul(std::string(p + 1, 4).c_str(), nullptr, 16));
-					p += 4;
-					if (c >= 0xD800 && c < 0xDC00 && p[1] == '\\' && p[2] == 'u') {
-						const char32_t lo = char32_t(std::strtoul(std::string(p + 3, 4).c_str(), nullptr, 16));
-						c = 0x10000 + ((c - 0xD800) << 10) + (lo - 0xDC00);
-						p += 6;
-					}
-					unicode::append_utf8(s, c);
-					break;
-				}
-				default: s += *p;
-			}
-		}
-		++p;
-		return s;
-	};
-	while (*p && *p != '}') {
-		if (*p == '"') {
-			std::string k = str();
-			++p;  // ':'
-			m[k] = str();
-		} else {
-			++p;
-		}
-	}
-	return m;
-}
 
 }  // namespace
 
@@ -85,7 +42,7 @@ int main(int argc, char** argv) {
 	std::map<std::string, std::size_t> skipped_flags;
 	std::ifstream in(argv[1]);
 	for (std::string line; std::getline(in, line);) {
-		auto r = row(line);
+		auto r = jsonl::row(line);
 		queryparser::config cfg;
 		cfg.flags = 0;
 		bool supported = true;
