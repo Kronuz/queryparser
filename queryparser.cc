@@ -277,6 +277,7 @@ struct frame {
 struct raw_word {
 	std::string text;  // lowercased
 	bool capital;
+	bool same_pos = false;  // a CJK unit: shares the position of the unit before it
 	bool star = false;  // followed by `*`
 };
 
@@ -345,7 +346,13 @@ private:
 			if (c != w[i]) { return false; }
 		}
 		const char* q = p + w.size();
-		return !word_at(q) && !((has(flag::wildcard) || glob_) && q < e_ && *q == '*');
+		std::uint32_t d;
+		const char* x;
+		if (has(flag::cjk_ngram) && q < e_) {
+			const char* z = q;
+			if (analysis::is_ngram_char(unicode::next_utf8(z, e_))) { return true; }
+		}
+		return !word_at(q) && !((has(flag::wildcard) || glob_) && q < e_ && *q == '*') && !fuzzy_at(q, d, x);
 	}
 
 	// AND, OR, NOT and XOR, in any case under boolean_any_case.
@@ -627,7 +634,7 @@ private:
 			if (v > 0xFFFFFFFFu) { v = 0xFFFFFFFFu; }
 			++d;
 		}
-		if (d == j && !word_at(j) && !(j < e_ && *j == '~')) {
+		if (d == j && !word_at(j) && !(j < e_ && (*j == '~' || *j == '-'))) {
 			dist = 2;
 			end = j;
 			return true;
@@ -873,12 +880,28 @@ private:
 			while (q < e_ && *q != '"') { ++q; }
 		}
 		// An unclosed phrase that holds a glob character is read as plain words.
-		if (q >= e_ && glob_ && std::string_view(s, std::size_t(q - s)).find_first_of("*?") != std::string_view::npos) { return reparse(); }
+		if (q >= e_ && (glob_ || has(flag::wildcard)) && std::string_view(s, std::size_t(q - s)).find_first_of("*?") != std::string_view::npos) { return reparse(); }
 		std::vector<raw_word> words;
 		const char* t = s;
 		while (t < q) {
 			const char* u = t;
-			if (analysis::is_word_char(unicode::next_utf8(u, q))) {
+			const char32_t c = unicode::next_utf8(u, q);
+			if (has(flag::cjk_ngram) && analysis::is_word_char(c) && analysis::is_ngram_char(c)) {
+				// A CJK run is its units at one position.
+				bool first = true;
+				while (t < q) {
+					const char* v = t;
+					const char32_t d = unicode::next_utf8(v, q);
+					if (!analysis::is_word_char(d) || !analysis::is_ngram_char(d)) { break; }
+					raw_word w;
+					w.capital = false;
+					unicode::append_utf8(w.text, unicode::tolower(d));
+					w.same_pos = !first;
+					first = false;
+					words.push_back(std::move(w));
+					t = v;
+				}
+			} else if (analysis::is_word_char(c)) {
 				raw_word w;
 				t = take_word(t, q, w);
 				words.push_back(std::move(w));
@@ -946,7 +969,7 @@ private:
 		if (z) { t = "Z"; }
 		t += prefix;
 		t += body;
-		return bld_.term(t, ++termpos_);
+		return bld_.term(t, w.same_pos ? termpos_ : ++termpos_);
 	}
 
 	// Adds an item to the current group. n == no_node drops it, but a word that a stop list
@@ -1086,7 +1109,7 @@ private:
 	// The group's items become: required (+) items and, under AND, every loose element; the
 	// optional rest; the excluded (-) items. A run of adjacent plain words is one element.
 	node_id combine_items(std::size_t first) {
-		if (items_.size() - first == 1 && items_[first].m == mark::minus && items_[first].quote && (cfg_.stopper || !boolean())) {
+		if (items_.size() - first == 1 && items_[first].m == mark::minus && items_[first].quote && ((cfg_.stopper || !boolean()) || bld_.at(items_[first].n).k == kind::term)) {
 			reparse();
 			return no_node;
 		}
@@ -1154,7 +1177,12 @@ private:
 		for (std::size_t i = first; i < end;) {
 			std::size_t j = i + 1;
 			if ((items_[i].plain || items_[i].solo) && items_[i].m == mark::none) {
-				while (!items_[i].solo && j < end && items_[j].plain && items_[j].m == mark::none && gap_is_space(items_[j - 1], items_[j].offset)) { ++j; }
+				// A run extends over plain words and ends with a word that stands alone.
+				while (!items_[i].solo && j < end && (items_[j].plain || items_[j].solo) && items_[j].m == mark::none &&
+				       gap_is_space(items_[j - 1], items_[j].offset)) {
+					++j;
+					if (items_[j - 1].solo) { break; }
+				}
 				bool nonstop = false;
 				for (std::size_t x = i; x < j; ++x) { nonstop |= !items_[x].stop; }
 				if (nonstop || j - i < 2 || anchored) {

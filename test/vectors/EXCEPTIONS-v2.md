@@ -13,12 +13,3 @@ Kinds:
 - ROW | KIND | query: reason`, ROW the 1-based line of parse-v2.jsonl.
 Kinds: `xapian-2.1` (2.1 differs from the 2.0 reference, Q5), `stemmer` (V2 used Xapian::Stem, the library uses snowball), `unreachable` (word breaks without ICU; excepted by the runner).
 
-- 1173 | open | (a "b c*: tracked
-- 2311 | open | a~-1: tracked
-- 2551 | open | 中文AND分词: tracked
-- 2552 | open | "中文分词": tracked
-- 2570 | open | "中文分词": tracked
-- 2682 | open | ba~-1: tracked
-- 2750 | open | ba~2 bc~1*: tracked
-- 2793 | open | ba*~ OR~ bc*~: tracked
-- 3056 | open | a~ OR~ b~: tracked
