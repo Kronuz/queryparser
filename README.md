@@ -65,10 +65,11 @@ Steps 1 to 3 of the plan in strata `docs/design/queryparser.md`: every flag abov
 strategies, stop words, default prefixes, the other default operators, expansion caps, errors, all
 528 rows of `parse.jsonl` (T1) and Xapiand's configurations in `parse-v2.jsonl` (T2: 3,488 rows; the
 rows where Xapian 2.1, the oracle, differs from the 2.0 that Xapiand ships are listed in
-`test/vectors/EXCEPTIONS-v2.md`). The parser follows 2.0: a capitalized word is stemmed under
-`some`, `ab+` and `c#` keep their suffix, and `NEAR` beside a wildcard with BOOLEAN off is a word.
-One deliberate difference remains: a lone exclusion (`-a`) under BOOLEAN with no stop list is a
-syntax error, where 2.0 reads it as `a`. The extensions (escaping, boosts, slop, lenient errors)
+`test/vectors/EXCEPTIONS-v2.md`). Where the shipped Xapian 2.0 and the 2.1 oracle differ, the
+parser takes the better behaviour: a capitalized word is stemmed under `some` like any word, `ab+` and
+`c#` keep their suffix (the index keeps it), and `NEAR` beside a wildcard with BOOLEAN off is a word.
+A lone exclusion (`-a`) under BOOLEAN with no stop list is a syntax error, where 2.0 reads it as `a`
+and turns the exclusion into an inclusion. The extensions (escaping, boosts, slop, lenient errors)
 come after.
 
 ## Tests
@@ -81,7 +82,7 @@ cmake -S . -B build && cmake --build build && ctest --test-dir build
   `test/vectors/EXCEPTIONS.md`. `queryparser_t2`: the rows of `parse-v2.jsonl` under the settings each
   records, with `test/vectors/EXCEPTIONS-v2.md`; the same program runs `parse-v3.jsonl` (T3) and
   `parse-ab.jsonl` (T5: the rows where an A/B run inside Xapiand found the parser differing from 2.0,
-  with the shipped 2.0 answer as expected output; `EXCEPTIONS-ab.md`).
+  with the decision for each as expected output and the 2.0 answer where they differ).
 - `queryparser_test`: grammar tests. `queryparser_deep`: 10^6-level nesting on a 512 KiB stack.
 - `queryparser_random`: 1 MiB of random input. `QUERYPARSER_FUZZ=ON` adds the libFuzzer target.
 

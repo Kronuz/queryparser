@@ -446,14 +446,15 @@ int main() {
 		// An exclusion that stays is expanded; one that reads as unmarked stands as its plain term.
 		CHECK_EQ(run("a NEAR -b*", c), "Query(((a@1 OR near@2) AND_NOT WILDCARD SYNONYM b))");
 		CHECK_EQ(run("-ba*", c), "Query(ba@1)");
-		// A default NEAR or PHRASE joined around an exclusion has a window of its terms.
+		// A default NEAR or PHRASE keeps its window around an exclusion: `a -b c` reads its words as `a c` does.
 		config n = plain();
 		n.flags = flag::phrase | flag::lovehate;
 		n.default_op = kind::near;
 		CHECK_EQ(run("a b c", n), "Query((a@1 NEAR 12 b@2 NEAR 12 c@3))");
-		CHECK_EQ(run("a -b c", n), "Query(((a@1 NEAR 2 c@3) AND_NOT b@2))");
+		CHECK_EQ(run("a -b c", n), "Query(((a@1 NEAR 11 c@3) AND_NOT b@2))");
+		CHECK_EQ(run("a c", n), "Query((a@1 NEAR 11 c@2))");
 		n.default_op = kind::phrase;
-		CHECK_EQ(run("+a b -c d", n), "Query(((a@1 AND_MAYBE (b@2 PHRASE 2 d@4)) AND_NOT c@3))");
+		CHECK_EQ(run("+a b -c d", n), "Query(((a@1 AND_MAYBE (b@2 PHRASE 11 d@4)) AND_NOT c@3))");
 		CHECK_EQ(run("ab,cd", n), "Query((ab@1 PHRASE 11 cd@2))");
 		// Kept on purpose: a lone `-a` under BOOLEAN with no stop list is a syntax error (2.0 reads it as `a`).
 		config b = plain();

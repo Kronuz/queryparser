@@ -2,7 +2,7 @@
 
 One line per row the parser deliberately does not match: `- query | flags | stem: reason`.
 
-Kind `2.1 versus 2.0`: the oracle is Xapian 2.1 and Xapiand ships 2.0; the parser follows 2.0 (Q5). A capitalized word is stemmed under `some` in 2.0 and left as written in 2.1.
+Kind `2.1 versus 2.0`: the oracle is Xapian 2.1 and the parser differs on purpose: a capitalized word is stemmed under `some` as every word is (2.0 does; 2.1 leaves it as written).
 
 - barack NEAR obama | default|wildcard|partial | some: 2.1 versus 2.0, a capitalized word is stemmed under `some` (2.0), left as written in 2.1
 - barack ADJ obama | default|wildcard|partial | some: 2.1 versus 2.0, a capitalized word is stemmed under `some` (2.0), left as written in 2.1

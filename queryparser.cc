@@ -1068,18 +1068,17 @@ private:
 
 	// l OP r: same-kind chains of AND, OR and XOR extend the left operand only. A dropped operand
 	// removes its operator, and a dropped left operand removes AND_NOT with it.
-	node_id join(kind k, node_id l, node_id r, bool excluding = false) {
+	node_id join(kind k, node_id l, node_id r) {
 		if (l == no_node) { return k == kind::and_not ? no_node : r; }
 		if (r == no_node) { return l; }
 		switch (k) {
-			case kind::near: case kind::phrase: case kind::elite_set: case kind::synonym: case kind::max: return nary(k, {l, r}, excluding);
+			case kind::near: case kind::phrase: case kind::elite_set: case kind::synonym: case kind::max: return nary(k, {l, r});
 			default: return bld_.combine(k, l, r);
 		}
 	}
 
 	// A NEAR, PHRASE or other n-ary node over kids.
-	// A pair joined in a group that holds an exclusion has a window of its terms.
-	node_id nary(kind k, const std::vector<node_id>& kids, bool pair = false) {
+	node_id nary(kind k, const std::vector<node_id>& kids) {
 		if (kids.size() == 1) { return kids[0]; }
 		std::uint32_t window = 0;
 		if (k == kind::near || k == kind::phrase) {
@@ -1089,7 +1088,7 @@ private:
 					return no_node;
 				}
 			}
-			window = std::uint32_t(pair ? kids.size() : 10 + kids.size() - 1);
+			window = std::uint32_t(10 + kids.size() - 1);
 		} else if (k == kind::elite_set) {
 			window = 10;
 		}
@@ -1099,10 +1098,10 @@ private:
 	}
 
 	// Joins the elements of a group pairwise with the default operator.
-	node_id join_default(const std::vector<node_id>& kids, bool excluding = false) {
+	node_id join_default(const std::vector<node_id>& kids) {
 		if (kids.empty()) { return no_node; }
 		node_id acc = kids[0];
-		for (std::size_t i = 1; i < kids.size(); ++i) { acc = join(default_op_, acc, kids[i], excluding); }
+		for (std::size_t i = 1; i < kids.size(); ++i) { acc = join(default_op_, acc, kids[i]); }
 		return acc;
 	}
 
@@ -1238,7 +1237,7 @@ private:
 			i = j;
 		}
 		node_id res = fold(req, kind::and_);
-		const node_id o = opt.empty() ? no_node : join_default(opt, !exc.empty());
+		const node_id o = opt.empty() ? no_node : join_default(opt);
 		if (failed_) { return no_node; }
 		if (res == no_node) {
 			res = o;
