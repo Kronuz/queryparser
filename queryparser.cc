@@ -801,7 +801,7 @@ private:
 	// A lone word: a term, or a wildcard, edit-distance or partial query. Returns where
 	// the item ends.
 	const char* single(const raw_word& w, const std::string& prefix, const char* r, const char* start) {
-		// An excluded word expands too; if the exclusion reads as unmarked, the plain term stands.
+		// An excluded word expands to a wildcard; if the exclusion reads as unmarked, the plain term stands.
 		const bool minus = pending_ == mark::minus;
 		if (has(flag::wildcard) && r < e_ && *r == '*') {
 			anchor_ = true;
@@ -815,16 +815,12 @@ private:
 		}
 		std::uint32_t dist;
 		const char* fend;
-		if (fuzzy_at(r, dist, fend)) {
+		if (!minus && fuzzy_at(r, dist, fend)) {
 			const node_id n = bld_.leaf(kind::edit_distance, prefix + w.text, dist, cfg_.fuzzy_expansion);
 			bld_.set_pos(n, std::uint32_t(prefix.size()));
 			anchor_ = true;
-			if (minus) {
-				alt_ = make_term(w, prefix, false);
-			} else {
-				++termpos_;
-			}
-			operand(n, off(start), fend, false, minus && stopword(w));
+			++termpos_;
+			operand(n, off(start), fend, false);
 			return fend;
 		}
 		if (has(flag::partial) && !(call_ && ket_) && r == e_ && code_points(w.text) >= 2 && !(boolean() && (keyword(start, "NEAR") || keyword(start, "ADJ")))) {
@@ -845,7 +841,7 @@ private:
 		}
 		std::vector<raw_word> one{w};
 		const bool solo = r + 1 < e_ && ((has(flag::fuzzy) && *r == '~') || *r == '*');
-		const bool stop = cfg_.stopper && !stop_all() && is_stop(w);
+		const bool stop = stopword(w);
 		solo_ = solo;
 		kw_ = w.capital && (w.text == "and" || w.text == "or" || w.text == "not" || w.text == "xor" || w.text == "near" || w.text == "adj");
 		glued_ = glued_anchor(r, pending_);
@@ -1188,7 +1184,7 @@ private:
 			std::size_t j = i + 1;
 			if ((items_[i].plain || items_[i].solo) && items_[i].m == mark::none) {
 				// A run extends over plain words and ends with a word that stands alone.
-				while (!items_[i].solo && !items_[i].glued && j < end && (items_[j].plain || items_[j].solo) && !items_[j].glued && items_[j].m == mark::none &&
+				while (!items_[i].solo && j < end && (items_[j].plain || items_[j].solo) && !items_[j].glued && items_[j].m == mark::none &&
 				       gap_is_space(items_[j - 1], items_[j].offset)) {
 					++j;
 					if (items_[j - 1].solo) { break; }
@@ -1198,7 +1194,7 @@ private:
 					nonstop |= !items_[x].stop;
 					anchored |= items_[x].anchor;
 				}
-				anchored |= j < end && items_[j].anchor && items_[j].m == mark::none && gap_is_space(items_[j - 1], items_[j].offset);
+				anchored |= j < end && items_[j].anchor && items_[j].m == mark::none;
 				if (nonstop || j - i < 2 || anchored) {
 					for (std::size_t x = i; x < j; ++x) {
 						if (items_[x].stop) { items_[x].n = no_node; }
