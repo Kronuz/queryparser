@@ -1,0 +1,261 @@
+# T3 exceptions
+
+One line per V3 row the parser does not match: `- ROW | KIND | query: reason`, ROW the 1-based line of parse-v3.jsonl.
+Kinds are those of EXCEPTIONS-v2.md; `open` rows are tracked, and a stale one fails the run.
+
+- 1 | open | a) b: tracked
+- 2 | open | a) b: tracked
+- 3 | open | a) b: tracked
+- 4 | open | a) b: tracked
+- 6 | open | a) b: tracked
+- 7 | open | a) b: tracked
+- 13 | open | foo) bar: tracked
+- 15 | open | a) bar: tracked
+- 16 | open | a) bar: tracked
+- 17 | open | a) bar: tracked
+- 18 | open | a) bar: tracked
+- 20 | open | a) bar: tracked
+- 21 | open | a) bar: tracked
+- 22 | open | foo) b: tracked
+- 23 | open | foo) b: tracked
+- 24 | open | foo) b: tracked
+- 25 | open | foo) b: tracked
+- 27 | open | foo) b: tracked
+- 28 | open | foo) b: tracked
+- 29 | open | a )b: tracked
+- 30 | open | a )b: tracked
+- 41 | open | a (b) c): tracked
+- 42 | open | a (b) c): tracked
+- 43 | open | a (b) c): tracked
+- 44 | open | a (b) c): tracked
+- 46 | open | a (b) c): tracked
+- 47 | open | a (b) c): tracked
+- 69 | open | a OR b) c: tracked
+- 70 | open | a OR b) c: tracked
+- 73 | open | a NEAR b): tracked
+- 75 | open | foo NEAR bar): tracked
+- 77 | open | a)b: tracked
+- 78 | open | a)b: tracked
+- 87 | open | )a*: tracked
+- 94 | open | )foo*: tracked
+- 101 | open | )the*: tracked
+- 110 | open | ) a*: tracked
+- 113 | open | ) foo*: tracked
+- 118 | open | a( b: tracked
+- 121 | open | foo( bar: tracked
+- 122 | open | foo( bar: tracked
+- 123 | open | foo( bar: tracked
+- 124 | open | foo( bar: tracked
+- 125 | open | foo( bar: tracked
+- 126 | open | foo( bar: tracked
+- 127 | open | foo( bar: tracked
+- 132 | open | a( bar: tracked
+- 135 | open | foo( b: tracked
+- 136 | open | foo( b: tracked
+- 137 | open | foo( b: tracked
+- 138 | open | foo( b: tracked
+- 139 | open | foo( b: tracked
+- 140 | open | foo( b: tracked
+- 141 | open | foo( b: tracked
+- 143 | open | a (b: tracked
+- 148 | open | foo(bar: tracked
+- 149 | open | foo(bar: tracked
+- 200 | open | (a "b c*: tracked
+- 207 | open | (foo "bar baz*: tracked
+- 214 | open | (a "bar baz*: tracked
+- 221 | open | (foo "bar c*: tracked
+- 314 | open | a(b): tracked
+- 317 | open | foo(bar): tracked
+- 318 | open | foo(bar): tracked
+- 319 | open | foo(bar): tracked
+- 320 | open | foo(bar): tracked
+- 321 | open | foo(bar): tracked
+- 322 | open | foo(bar): tracked
+- 323 | open | foo(bar): tracked
+- 328 | open | a(bar): tracked
+- 331 | open | foo(b): tracked
+- 332 | open | foo(b): tracked
+- 333 | open | foo(b): tracked
+- 334 | open | foo(b): tracked
+- 335 | open | foo(b): tracked
+- 336 | open | foo(b): tracked
+- 337 | open | foo(b): tracked
+- 342 | open | a+(b): tracked
+- 343 | open | a+(b): tracked
+- 344 | open | foo+(bar): tracked
+- 345 | open | foo+(bar): tracked
+- 347 | open | (a)b: tracked
+- 354 | open | a(b) c: tracked
+- 357 | open | foo(bar) baz: tracked
+- 358 | open | foo(bar) baz: tracked
+- 359 | open | foo(bar) baz: tracked
+- 360 | open | foo(bar) baz: tracked
+- 361 | open | foo(bar) baz: tracked
+- 362 | open | foo(bar) baz: tracked
+- 363 | open | foo(bar) baz: tracked
+- 368 | open | a(bar) baz: tracked
+- 369 | open | a(bar) baz: tracked
+- 371 | open | foo(bar) c: tracked
+- 372 | open | foo(bar) c: tracked
+- 373 | open | foo(bar) c: tracked
+- 374 | open | foo(bar) c: tracked
+- 375 | open | foo(bar) c: tracked
+- 376 | open | foo(bar) c: tracked
+- 377 | open | foo(bar) c: tracked
+- 388 | open | foo(bar)baz: tracked
+- 389 | open | foo(bar)baz: tracked
+- 1036 | open | -"a b" c: tracked
+- 1037 | open | -"a b" c: tracked
+- 1038 | open | -"a b" c: tracked
+- 1039 | open | -"a b" c: tracked
+- 1042 | open | -"a b" c: tracked
+- 1057 | open | -"foo bar" c: tracked
+- 1058 | open | -"foo bar" c: tracked
+- 1059 | open | -"foo bar" c: tracked
+- 1060 | open | -"foo bar" c: tracked
+- 1063 | open | -"foo bar" c: tracked
+- 1064 | open | a -"b c": tracked
+- 1065 | open | a -"b c": tracked
+- 1068 | open | -"a b": tracked
+- 1069 | open | -"a b": tracked
+- 1070 | open | -"foo bar": tracked
+- 1071 | open | -"foo bar": tracked
+- 1104 | open | -(a) b: tracked
+- 1105 | open | -(a) b: tracked
+- 1116 | open | -a OR b: tracked
+- 1117 | open | -a OR b: tracked
+- 1120 | open | -a OR b: tracked
+- 1122 | open | -a OR b: tracked
+- 1123 | open | -foo OR bar: tracked
+- 1124 | open | -foo OR bar: tracked
+- 1127 | open | -foo OR bar: tracked
+- 1129 | open | -foo OR bar: tracked
+- 1130 | open | -a OR bar: tracked
+- 1131 | open | -a OR bar: tracked
+- 1134 | open | -a OR bar: tracked
+- 1136 | open | -a OR bar: tracked
+- 1137 | open | -foo OR b: tracked
+- 1138 | open | -foo OR b: tracked
+- 1141 | open | -foo OR b: tracked
+- 1143 | open | -foo OR b: tracked
+- 1144 | open | -a XOR b: tracked
+- 1146 | open | -foo XOR bar: tracked
+- 1148 | open | -a NOT b: tracked
+- 1150 | open | -foo NOT bar: tracked
+- 1304 | open | -a AND b: tracked
+- 1306 | open | -foo AND bar: tracked
+- 1319 | open | -a: tracked
+- 1326 | open | -foo: tracked
+- 1327 | open | -foo: tracked
+- 1334 | open | -the: tracked
+- 1335 | open | -the: tracked
+- 1351 | open | -foo -bar -baz: tracked
+- 1355 | open | -a -b: tracked
+- 1362 | open | -foo -bar: tracked
+- 1363 | open | -foo -bar: tracked
+- 1370 | open | -a -bar: tracked
+- 1371 | open | -a -bar: tracked
+- 1379 | open | -foo -b: tracked
+- 1454 | open | -a OR -b: tracked
+- 1456 | open | -foo OR -bar: tracked
+- 1542 | open | -a XOR -b: tracked
+- 1544 | open | -foo XOR -bar: tracked
+- 1739 | open | a AND --(b): tracked
+- 1742 | open | a AND - -b: tracked
+- 1744 | open | foo AND - -bar: tracked
+- 1746 | open | a~-1: tracked
+- 1747 | open | a~-1: tracked
+- 1748 | open | a~-1: tracked
+- 1749 | open | a~-1: tracked
+- 1750 | open | a~-1: tracked
+- 1751 | open | a~-1: tracked
+- 1752 | open | a~-1: tracked
+- 1753 | open | a~-1: tracked
+- 1754 | open | foo~-1: tracked
+- 1755 | open | foo~-1: tracked
+- 1756 | open | foo~-1: tracked
+- 1757 | open | foo~-1: tracked
+- 1758 | open | foo~-1: tracked
+- 1759 | open | foo~-1: tracked
+- 1760 | open | foo~-1: tracked
+- 1761 | open | foo~-1: tracked
+- 1762 | open | the~-1: tracked
+- 1763 | open | the~-1: tracked
+- 1764 | open | the~-1: tracked
+- 1765 | open | the~-1: tracked
+- 1766 | open | the~-1: tracked
+- 1767 | open | the~-1: tracked
+- 1768 | open | the~-1: tracked
+- 1769 | open | the~-1: tracked
+- 1770 | open | a~-: tracked
+- 1771 | open | a~-: tracked
+- 1772 | open | foo~-: tracked
+- 1773 | open | foo~-: tracked
+- 1782 | open | a~-1 b: tracked
+- 1783 | open | a~-1 b: tracked
+- 1784 | open | foo~-1 bar: tracked
+- 1785 | open | foo~-1 bar: tracked
+- 1786 | open | a*~ OR~ b*~: tracked
+- 1787 | open | a*~ OR~ b*~: tracked
+- 1790 | open | a*~ OR~ b*~: tracked
+- 1791 | open | a*~ OR~ b*~: tracked
+- 1792 | open | a*~ OR~ b*~: tracked
+- 1794 | open | foo*~ OR~ bar*~: tracked
+- 1795 | open | foo*~ OR~ bar*~: tracked
+- 1798 | open | foo*~ OR~ bar*~: tracked
+- 1799 | open | foo*~ OR~ bar*~: tracked
+- 1800 | open | foo*~ OR~ bar*~: tracked
+- 1802 | open | a*~ OR~ bar*~: tracked
+- 1803 | open | a*~ OR~ bar*~: tracked
+- 1806 | open | a*~ OR~ bar*~: tracked
+- 1807 | open | a*~ OR~ bar*~: tracked
+- 1808 | open | a*~ OR~ bar*~: tracked
+- 1810 | open | foo*~ OR~ b*~: tracked
+- 1811 | open | foo*~ OR~ b*~: tracked
+- 1814 | open | foo*~ OR~ b*~: tracked
+- 1815 | open | foo*~ OR~ b*~: tracked
+- 1816 | open | foo*~ OR~ b*~: tracked
+- 1818 | open | a~ OR~ b~: tracked
+- 1820 | open | foo~ OR~ bar~: tracked
+- 1826 | open | a OR~ b: tracked
+- 1828 | open | foo OR~ bar: tracked
+- 1834 | open | a~2 b~1*: tracked
+- 1838 | open | foo~2 bar~1*: tracked
+- 1839 | open | foo~2 bar~1*: tracked
+- 1840 | open | foo~2 bar~1*: tracked
+- 1841 | open | foo~2 bar~1*: tracked
+- 1842 | open | foo~2 bar~1*: tracked
+- 1843 | open | foo~2 bar~1*: tracked
+- 1844 | open | foo~2 bar~1*: tracked
+- 1845 | open | foo~2 bar~1*: tracked
+- 1850 | open | a~2 bar~1*: tracked
+- 1858 | open | foo~2 b~1*: tracked
+- 1894 | open | a\)b: tracked
+- 1895 | open | a\)b: tracked
+- 1918 | open | 中文AND分词: tracked
+- 1927 | open | AND分词: tracked
+- 1930 | open | 中文OR分词: tracked
+- 1948 | open | "中文分词": tracked
+- 1949 | open | "中文分词": tracked
+- 1952 | open | "中文": tracked
+- 1953 | open | "中文": tracked
+- 1956 | open | "分词": tracked
+- 1957 | open | "分词": tracked
+- 1960 | open | "中文 分词": tracked
+- 1961 | open | "中文 分词": tracked
+- 1964 | open | "a 中文": tracked
+- 1965 | open | "a 中文": tracked
+- 1968 | open | "中文 a": tracked
+- 1969 | open | "中文 a": tracked
+- 1972 | open | "中文分词: tracked
+- 1973 | open | "中文分词: tracked
+- 1976 | open | 中文"分词": tracked
+- 1977 | open | 中文"分词": tracked
+- 1980 | open | -"中文分词": tracked
+- 1981 | open | -"中文分词": tracked
+- 1983 | open | -"中文分词": tracked
+- 1984 | open | +"中文分词": tracked
+- 1985 | open | +"中文分词": tracked
+- 1988 | open | "中文分词" foo: tracked
+- 1989 | open | "中文分词" foo: tracked
+- 1992 | open | "中文分词" NEAR foo: tracked

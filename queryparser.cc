@@ -236,6 +236,9 @@ namespace {
 
 enum class mark : std::uint8_t { none, plus, minus };
 
+// Internal flag of a re-read: a double quote is punctuation.
+constexpr std::uint32_t plain_quotes = 1u << 31;
+
 // A thing in a group of juxtaposed items. n == no_node is a dropped stop word, which still
 // counts as an operand.
 struct item {
@@ -248,6 +251,8 @@ struct item {
 	bool anchor = false;  // a wildcard or an edit distance: stop words beside it go
 	bool solo = false;    // a word that stands alone: a run of its own
 	bool kw = false;      // an upper-case operator word
+	bool quote = false;   // a quoted phrase
+	bool group = false;   // a bracket
 };
 
 struct pending_op {
@@ -303,7 +308,7 @@ public:
 		frames_.push_back({0, 0, 0, true, mark::none, 0});
 		const char* p = b_;
 		while (p < e_ && !failed_) { p = step(p); }
-		while (frames_.size() > 1 && !failed_) { close_frame(); }
+		while (frames_.size() > 1 && !failed_) { close_frame(e_); }
 		if (failed_) { return; }
 		const node_id root = close_group();
 		if (!failed_ && root != no_node) { bld_.set_root(root); }
@@ -354,11 +359,11 @@ private:
 
 	const char* step(const char* p) {
 		const char c = *p;
-		if (c == '"' && phrase()) { return quoted(p); }
+		if (c == '"' && phrase() && !has(plain_quotes)) { return quoted(p); }
 		if (c == '(') { return open_frame(p); }
 		if (c == ')') {
 			if (frames_.size() > 1) {
-				close_frame();
+				close_frame(p + 1);
 			} else {
 				stray_ket();
 			}
@@ -416,6 +421,7 @@ private:
 				fail_op(ops_.back().label, ops_.back().offset);
 				return e_;
 			}
+			if (prox_rereads(p) || quote_before(p)) { return reparse(); }
 			return nullptr;
 		} else {
 			return nullptr;
@@ -459,6 +465,47 @@ private:
 		ops_.push_back({k, off(p), label, false});
 		expect_ = true;
 		return r;
+	}
+
+	// Does a quoted phrase end just before p?
+	bool quote_before(const char* p) const {
+		if (!phrase() || expect_ || items_.size() <= top().items_base) { return false; }
+		const item& last = items_.back();
+		return last.quote && gap_is_space(last, off(p));
+	}
+
+	// A NEAR or ADJ at p that forms no chain, followed by an operator word or an expanding word,
+	// makes the whole text plain words.
+	bool prox_rereads(const char* p) const {
+		const char* s = p + (keyword(p, "NEAR") || slash_word(p, "NEAR") ? 4 : 3);
+		bool explicit_n = false;
+		if (s < e_ && *s == '/') {
+			const char* d = s + 1;
+			bool zeros = true;
+			for (; d < e_ && *d >= '0' && *d <= '9'; ++d) { zeros = zeros && *d == '0'; }
+			if (d == s + 1 || word_at(d) || zeros) { return false; }
+			s = d;
+			explicit_n = true;
+		} else if (word_at(s)) {
+			return false;
+		}
+		const char* x = s;
+		while (x < e_ && is_space(*x)) { ++x; }
+		if ((x == s && !explicit_n) || x >= e_) { return false; }
+		if (lovehate() && (*x == '+' || *x == '-') && x + 1 < e_ && word_at(x + 1)) { return true; }
+		if (*x == '"' && phrase()) { return true; }
+		if (!word_at(x)) { return false; }
+		if (op_keyword(x)) { return true; }
+		if (proximity_word(x)) { return false; }
+		raw_word w;
+		const char* u = const_cast<parser*>(this)->take_word(x, e_, w);
+		for (;;) {
+			if (expands(u, w)) { return true; }
+			const char* g = u;
+			while (g < e_ && is_generator(*g)) { ++g; }
+			if (!phrase() || g == u || !word_at(g)) { return false; }
+			u = const_cast<parser*>(this)->take_word(g, e_, w);
+		}
 	}
 
 	// The operator keyword that follows r after white space, or null.
@@ -689,13 +736,17 @@ private:
 			const char* x = t;
 			while (x < e_ && is_space(*x)) { ++x; }
 			if (x == t && !explicit_n) { break; }
+			// A lone `+` between the operator and its operand is skipped.
+			if (x + 1 < e_ && *x == '+' && is_space(x[1])) {
+				for (x += 2; x < e_ && is_space(*x);) { ++x; }
+			}
 			// No operand, or one that is no plain word: NEAR stays a word.
 			if (x >= e_ || !word_at(x) || proximity_word(x) || op_keyword(x)) { break; }
 			raw_word nw;
 			const char* r2 = take_word(x, e_, nw);
 			if (joins(r2, m)) { break; }
 			if (prox != kind::term && prox != k) { return reparse(); }
-			if (!proximity && !expect_) { return reparse(); }
+			if (!proximity && (!expect_ || m == mark::minus)) { return reparse(); }
 			if (expands(r, words.back()) || expands(r2, nw)) { return reparse(); }
 			prox = k;
 			if (explicit_n || !set_distance) { distance = n; }
@@ -768,7 +819,7 @@ private:
 			operand(n, off(start), fend, false);
 			return fend;
 		}
-		if (has(flag::partial) && r == e_ && code_points(w.text) >= 2) {
+		if (has(flag::partial) && r == e_ && code_points(w.text) >= 2 && !(boolean() && (keyword(start, "NEAR") || keyword(start, "ADJ")))) {
 			const node_id wc = bld_.leaf(kind::wildcard, prefix + w.text, 0, cfg_.partial_expansion);
 			anchor_ = true;
 			if (cfg_.stopper && is_stop(w)) {
@@ -840,6 +891,7 @@ private:
 			}
 		}
 		const char* after = q < e_ ? q + 1 : q;
+		quote_ = true;
 		operand(finish(words, prefix, kind::phrase, false, 0), off(p), after, false);
 		return after;
 	}
@@ -906,8 +958,8 @@ private:
 	void operand(node_id n, std::size_t offset, const char* end, bool plain, bool stop = false) {
 		const mark m = std::exchange(pending_, mark::none);
 		if (n == no_node && !std::exchange(stopped_, false)) { return; }
-		push_item({n, m, offset, std::size_t(end - b_), plain, stop, anchor_, solo_, kw_});
-		anchor_ = solo_ = kw_ = false;
+		push_item({n, m, offset, std::size_t(end - b_), plain, stop, anchor_, solo_, kw_, quote_});
+		anchor_ = solo_ = kw_ = quote_ = false;
 	}
 
 	void push_item(item it) {
@@ -936,14 +988,14 @@ private:
 		return p + 1;
 	}
 
-	void close_frame() {
+	void close_frame(const char* end) {
 		const frame f = frames_.back();
 		const bool had = !expect_ || vals_.size() > f.vals_base || ops_.size() > f.ops_base;
 		const node_id n = close_group();
 		if (failed_) { return; }
 		frames_.pop_back();
 		expect_ = f.parent_expect;
-		if (had) { push_item({n, f.m, f.offset, f.offset, false, false}); }
+		if (had) { push_item({n, f.m, f.offset, off(end), false, std::exchange(lone_stop_, false), false, false, false, false, true}); }
 	}
 
 	// Closes the current frame's operators and items into one node (no_node: nothing left).
@@ -957,6 +1009,8 @@ private:
 			ops_.pop_back();
 		}
 		if (!expect_) {
+			// A bracket that holds one stop word and nothing else.
+			lone_stop_ = ops_.size() == f.ops_base && vals_.size() == f.vals_base && items_.size() == f.items_base + 1 && items_.back().stop && items_.back().m == mark::none;
 			const node_id g = close_group_items();
 			if (failed_) { return no_node; }
 			vals_.push_back(g);
@@ -1048,6 +1102,30 @@ private:
 				if (items_[i].m == mark::minus) { items_[i].m = mark::none; }
 			}
 		}
+		// A bracket of one stop word goes beside a heavy item (a non-stop word, or an operator word)
+		// that white space separates from it, or after a word glued to it.
+		if (end - first > 1) {
+			std::vector<bool> drop(end - first, false);
+			for (std::size_t i = first; i < end; ++i) {
+				const item& x = items_[i];
+				if (!x.stop || !x.group || x.m != mark::none || x.n == no_node) { continue; }
+				auto heavy = [&](const item& y) { return !y.group && y.n != no_node && (y.kw || !y.stop); };
+				bool d = false;
+				if (i > first) {
+					const item& y = items_[i - 1];
+					d |= heavy(y) && y.end < x.offset && gap_is_space(y, x.offset);
+					d |= (y.plain || y.solo) && y.n != no_node && gap_is_generators(y.end, x.offset);
+				}
+				if (i + 1 < end) {
+					const item& y = items_[i + 1];
+					d |= heavy(y) && x.end < y.offset && gap_is_space(x, y.offset);
+				}
+				drop[i - first] = d;
+			}
+			for (std::size_t i = first; i < end; ++i) {
+				if (drop[i - first]) { items_[i].n = no_node; }
+			}
+		}
 		// Stop words go from a run, unless the run is only stop words and has two or more.
 		std::vector<std::size_t> run_end(end - first, 0);
 		bool anchored = false;
@@ -1075,7 +1153,7 @@ private:
 			for (std::size_t i = first; i < end; ++i) {
 				const item& x = items_[i];
 				hate |= x.m == mark::minus;
-				solid |= x.n != no_node && x.m != mark::minus && (x.m == mark::plus || !x.stop);
+				solid |= x.n != no_node && x.m != mark::minus;
 			}
 			if (hate && !solid) {
 				retry = true;
@@ -1130,6 +1208,14 @@ private:
 		return acc;
 	}
 
+	// Only generator characters (possibly none) lie in [from, to).
+	bool gap_is_generators(std::size_t from, std::size_t to) const {
+		for (; from < to; ++from) {
+			if (!is_generator(b_[from])) { return false; }
+		}
+		return true;
+	}
+
 	// Only white space lies between prev and the next item (an operator word keeps its trailing generator characters).
 	bool gap_is_space(const item& prev, std::size_t to) const {
 		std::size_t from = prev.end;
@@ -1173,6 +1259,8 @@ private:
 	bool anchor_ = false;
 	bool solo_ = false;
 	bool kw_ = false;
+	bool quote_ = false;
+	bool lone_stop_ = false;
 	kind default_op_ = kind::or_;
 	mark pending_ = mark::none;
 	std::uint32_t termpos_ = 0;
@@ -1194,7 +1282,8 @@ parse_result parse(std::string_view text, const config& cfg) {
 		if (first.needs_reparse()) {
 			// Plain words: no operators and no expansion.
 			config plain = cfg;
-			plain.flags &= ~(flag::boolean | flag::wildcard | flag::partial | flag::fuzzy | flag::wildcard_single | flag::wildcard_multi);
+			plain.flags |= plain_quotes;
+			plain.flags &= ~(flag::lovehate | flag::boolean | flag::wildcard | flag::partial | flag::fuzzy | flag::wildcard_single | flag::wildcard_multi);
 			res = parse_result{};
 			parser(text, plain, res).run();
 		}

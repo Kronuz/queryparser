@@ -1,4 +1,4 @@
-// queryparser_t2 parse-v2.jsonl stopwords-dir [EXCEPTIONS-v2.md]: runs every V2 row through parse() with
+// queryparser_t2 parse-v2.jsonl stopwords-dir [EXCEPTIONS-v2.md]: runs every V2 row (T3 runs it over parse-v3.jsonl, same shape) through parse() with
 // the settings the row records and prints matched, excepted and failed rows. An exception is a line
 // `- ROW | KIND | query: reason` of the markdown file (ROW is the 1-based line of the jsonl); the
 // kinds are counted separately. The kind `open` marks a failing row that is tracked: it counts as failed
@@ -163,7 +163,8 @@ int main(int argc, char** argv) {
 	    {"lovehate", queryparser::flag::lovehate},   {"wildcard", queryparser::flag::wildcard},
 	    {"partial", queryparser::flag::partial},     {"fuzzy", queryparser::flag::fuzzy},
 	    {"cjk_ngram", queryparser::flag::cjk_ngram}, {"wildcard_single", queryparser::flag::wildcard_single},
-	    {"wildcard_multi", queryparser::flag::wildcard_multi}, {"word_breaks", 0}};
+	    {"wildcard_multi", queryparser::flag::wildcard_multi}, {"word_breaks", 0},
+	    {"pure_not", queryparser::flag::pure_not}, {"boolean_any_case", queryparser::flag::boolean_any_case}, {"-", 0}};
 	const std::map<std::string, analysis::stem_strategy> stems = {{"unset", analysis::stem_strategy::none}, {"none", analysis::stem_strategy::none},
 	                                                              {"some", analysis::stem_strategy::some}, {"all", analysis::stem_strategy::all},
 	                                                              {"all_z", analysis::stem_strategy::all_z}};
