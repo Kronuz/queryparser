@@ -1,0 +1,528 @@
+{"query":"barack obama","flags":"default","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 OR (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 OR (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 OR (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 OR (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default","stem":"none","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default","stem":"some","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default","stem":"all","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default","stem":"all_z","description":"Query((Zbarack@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"\"barack obama\"","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|wildcard|partial","stem":"some","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|fuzzy","stem":"some","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|cjk_ngram","stem":"some","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 PHRASE 2 obama@2))","error":""}
+{"query":"\"barack obama\"","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 AND (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"+barack +obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 AND (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"+barack +obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 AND (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"+barack +obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 AND (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"+barack +obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"+barack +obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"+barack +obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 AND_NOT (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack -obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 AND_NOT (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack -obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 AND_NOT (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack -obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 AND_NOT (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack -obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack -obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack -obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 AND (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack AND obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 AND (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack AND obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 AND (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack AND obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 AND (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack AND obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack AND obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 AND obama@2))","error":""}
+{"query":"barack AND obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 AND Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 OR (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack OR obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 OR (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack OR obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 OR (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack OR obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 OR (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack OR obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack OR obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"barack OR obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 AND_NOT (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack NOT obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 AND_NOT (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack NOT obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 AND_NOT (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack NOT obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 AND_NOT (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack NOT obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 AND_NOT obama@2))","error":""}
+{"query":"barack NOT obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 AND_NOT Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default","stem":"none","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default","stem":"some","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default","stem":"all","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 XOR (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack XOR obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 XOR (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack XOR obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 XOR (WILDCARD SYNONYM obama OR obama@2)))","error":""}
+{"query":"barack XOR obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 XOR (WILDCARD SYNONYM obama OR Zobama@2)))","error":""}
+{"query":"barack XOR obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|fuzzy","stem":"some","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|cjk_ngram","stem":"some","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 XOR obama@2))","error":""}
+{"query":"barack XOR obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 XOR Zobama@2))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default","stem":"none","description":"Query(((barack@1 OR michelle@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default","stem":"some","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default","stem":"all","description":"Query(((barack@1 OR michell@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default","stem":"all_z","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query(((barack@1 OR michelle@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query(((barack@1 OR michell@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|wildcard|partial","stem":"none","description":"Query(((barack@1 OR michelle@2) AND (WILDCARD SYNONYM obama OR obama@3)))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|wildcard|partial","stem":"some","description":"Query(((Zbarack@1 OR Zmichell@2) AND (WILDCARD SYNONYM obama OR Zobama@3)))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|wildcard|partial","stem":"all","description":"Query(((barack@1 OR michell@2) AND (WILDCARD SYNONYM obama OR obama@3)))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query(((Zbarack@1 OR Zmichell@2) AND (WILDCARD SYNONYM obama OR Zobama@3)))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|fuzzy","stem":"none","description":"Query(((barack@1 OR michelle@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|fuzzy","stem":"some","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|fuzzy","stem":"all","description":"Query(((barack@1 OR michell@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|fuzzy","stem":"all_z","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query(((barack@1 OR michelle@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query(((barack@1 OR michell@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|cjk_ngram","stem":"none","description":"Query(((barack@1 OR michelle@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|cjk_ngram","stem":"some","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|cjk_ngram","stem":"all","description":"Query(((barack@1 OR michell@2) AND obama@3))","error":""}
+{"query":"(barack OR michelle) AND obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query(((Zbarack@1 OR Zmichell@2) AND Zobama@3))","error":""}
+{"query":"barack NEAR obama","flags":"default","stem":"none","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default","stem":"some","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default","stem":"all","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 NEAR 11 Zobama@2))","error":""}
+{"query":"barack NEAR obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 NEAR 11 Zobama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 OR near@2 OR obama@3))","error":""}
+{"query":"barack NEAR obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 OR near@2 OR Zobama@3))","error":""}
+{"query":"barack NEAR obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 OR near@2 OR obama@3))","error":""}
+{"query":"barack NEAR obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 OR Znear@2 OR Zobama@3))","error":""}
+{"query":"barack NEAR obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|fuzzy","stem":"some","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 NEAR 11 Zobama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 NEAR 11 Zobama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|cjk_ngram","stem":"some","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 NEAR 11 obama@2))","error":""}
+{"query":"barack NEAR obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 NEAR 11 Zobama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default","stem":"none","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default","stem":"some","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default","stem":"all","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default","stem":"all_z","description":"Query((Zbarack@1 PHRASE 11 Zobama@2))","error":""}
+{"query":"barack ADJ obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 PHRASE 11 Zobama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 OR adj@2 OR obama@3))","error":""}
+{"query":"barack ADJ obama","flags":"default|wildcard|partial","stem":"some","description":"Query((Zbarack@1 OR adj@2 OR Zobama@3))","error":""}
+{"query":"barack ADJ obama","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 OR adj@2 OR obama@3))","error":""}
+{"query":"barack ADJ obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 OR Zadj@2 OR Zobama@3))","error":""}
+{"query":"barack ADJ obama","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|fuzzy","stem":"some","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 PHRASE 11 Zobama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 PHRASE 11 Zobama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|cjk_ngram","stem":"some","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 PHRASE 11 obama@2))","error":""}
+{"query":"barack ADJ obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 PHRASE 11 Zobama@2))","error":""}
+{"query":"obam*","flags":"default","stem":"none","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default","stem":"some","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default","stem":"all","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default","stem":"all_z","description":"Query(Zobam@1)","error":""}
+{"query":"obam*","flags":"boolean|phrase|lovehate","stem":"none","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"boolean|phrase|lovehate","stem":"some","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"boolean|phrase|lovehate","stem":"all","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query(Zobam@1)","error":""}
+{"query":"obam*","flags":"default|wildcard|partial","stem":"none","description":"Query(WILDCARD SYNONYM obam)","error":""}
+{"query":"obam*","flags":"default|wildcard|partial","stem":"some","description":"Query(WILDCARD SYNONYM obam)","error":""}
+{"query":"obam*","flags":"default|wildcard|partial","stem":"all","description":"Query(WILDCARD SYNONYM obam)","error":""}
+{"query":"obam*","flags":"default|wildcard|partial","stem":"all_z","description":"Query(WILDCARD SYNONYM obam)","error":""}
+{"query":"obam*","flags":"default|fuzzy","stem":"none","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|fuzzy","stem":"some","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|fuzzy","stem":"all","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|fuzzy","stem":"all_z","description":"Query(Zobam@1)","error":""}
+{"query":"obam*","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query(Zobam@1)","error":""}
+{"query":"obam*","flags":"default|cjk_ngram","stem":"none","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|cjk_ngram","stem":"some","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|cjk_ngram","stem":"all","description":"Query(obam@1)","error":""}
+{"query":"obam*","flags":"default|cjk_ngram","stem":"all_z","description":"Query(Zobam@1)","error":""}
+{"query":"ob?ma","flags":"default","stem":"none","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default","stem":"some","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default","stem":"all","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default","stem":"all_z","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default|wildcard|partial","stem":"none","description":"Query((ob@1 OR (WILDCARD SYNONYM ma OR ma@2)))","error":""}
+{"query":"ob?ma","flags":"default|wildcard|partial","stem":"some","description":"Query((Zob@1 OR (WILDCARD SYNONYM ma OR Zma@2)))","error":""}
+{"query":"ob?ma","flags":"default|wildcard|partial","stem":"all","description":"Query((ob@1 OR (WILDCARD SYNONYM ma OR ma@2)))","error":""}
+{"query":"ob?ma","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zob@1 OR (WILDCARD SYNONYM ma OR Zma@2)))","error":""}
+{"query":"ob?ma","flags":"default|fuzzy","stem":"none","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default|fuzzy","stem":"some","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default|fuzzy","stem":"all","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default|fuzzy","stem":"all_z","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default|cjk_ngram","stem":"none","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default|cjk_ngram","stem":"some","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"ob?ma","flags":"default|cjk_ngram","stem":"all","description":"Query((ob@1 OR ma@2))","error":""}
+{"query":"ob?ma","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zob@1 OR Zma@2))","error":""}
+{"query":"obama~2","flags":"default","stem":"none","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default","stem":"some","description":"Query((Zobama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default","stem":"all","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default","stem":"all_z","description":"Query((Zobama@1 OR Z2@2))","error":""}
+{"query":"obama~2","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zobama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zobama@1 OR Z2@2))","error":""}
+{"query":"obama~2","flags":"default|wildcard|partial","stem":"none","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|wildcard|partial","stem":"some","description":"Query((Zobama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|wildcard|partial","stem":"all","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zobama@1 OR Z2@2))","error":""}
+{"query":"obama~2","flags":"default|fuzzy","stem":"none","description":"Query(EDIT_DISTANCE SYNONYM obama~2)","error":""}
+{"query":"obama~2","flags":"default|fuzzy","stem":"some","description":"Query(EDIT_DISTANCE SYNONYM obama~2)","error":""}
+{"query":"obama~2","flags":"default|fuzzy","stem":"all","description":"Query(EDIT_DISTANCE SYNONYM obama~2)","error":""}
+{"query":"obama~2","flags":"default|fuzzy","stem":"all_z","description":"Query(EDIT_DISTANCE SYNONYM obama~2)","error":""}
+{"query":"obama~2","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zobama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zobama@1 OR Z2@2))","error":""}
+{"query":"obama~2","flags":"default|cjk_ngram","stem":"none","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|cjk_ngram","stem":"some","description":"Query((Zobama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|cjk_ngram","stem":"all","description":"Query((obama@1 OR 2@2))","error":""}
+{"query":"obama~2","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zobama@1 OR Z2@2))","error":""}
+{"query":"running runners","flags":"default","stem":"none","description":"Query((running@1 OR runners@2))","error":""}
+{"query":"running runners","flags":"default","stem":"some","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default","stem":"all","description":"Query((run@1 OR runner@2))","error":""}
+{"query":"running runners","flags":"default","stem":"all_z","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((running@1 OR runners@2))","error":""}
+{"query":"running runners","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((run@1 OR runner@2))","error":""}
+{"query":"running runners","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default|wildcard|partial","stem":"none","description":"Query((running@1 OR (WILDCARD SYNONYM runners OR runners@2)))","error":""}
+{"query":"running runners","flags":"default|wildcard|partial","stem":"some","description":"Query((Zrun@1 OR (WILDCARD SYNONYM runners OR Zrunner@2)))","error":""}
+{"query":"running runners","flags":"default|wildcard|partial","stem":"all","description":"Query((run@1 OR (WILDCARD SYNONYM runners OR runner@2)))","error":""}
+{"query":"running runners","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zrun@1 OR (WILDCARD SYNONYM runners OR Zrunner@2)))","error":""}
+{"query":"running runners","flags":"default|fuzzy","stem":"none","description":"Query((running@1 OR runners@2))","error":""}
+{"query":"running runners","flags":"default|fuzzy","stem":"some","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default|fuzzy","stem":"all","description":"Query((run@1 OR runner@2))","error":""}
+{"query":"running runners","flags":"default|fuzzy","stem":"all_z","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((running@1 OR runners@2))","error":""}
+{"query":"running runners","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((run@1 OR runner@2))","error":""}
+{"query":"running runners","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default|cjk_ngram","stem":"none","description":"Query((running@1 OR runners@2))","error":""}
+{"query":"running runners","flags":"default|cjk_ngram","stem":"some","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"running runners","flags":"default|cjk_ngram","stem":"all","description":"Query((run@1 OR runner@2))","error":""}
+{"query":"running runners","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zrun@1 OR Zrunner@2))","error":""}
+{"query":"\"running runners\"","flags":"default","stem":"none","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default","stem":"some","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default","stem":"all","description":"Query((run@1 PHRASE 2 runner@2))","error":""}
+{"query":"\"running runners\"","flags":"default","stem":"all_z","description":"Query((Zrun@1 PHRASE 2 Zrunner@2))","error":""}
+{"query":"\"running runners\"","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((run@1 PHRASE 2 runner@2))","error":""}
+{"query":"\"running runners\"","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zrun@1 PHRASE 2 Zrunner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|wildcard|partial","stem":"none","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|wildcard|partial","stem":"some","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|wildcard|partial","stem":"all","description":"Query((run@1 PHRASE 2 runner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zrun@1 PHRASE 2 Zrunner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|fuzzy","stem":"none","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|fuzzy","stem":"some","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|fuzzy","stem":"all","description":"Query((run@1 PHRASE 2 runner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|fuzzy","stem":"all_z","description":"Query((Zrun@1 PHRASE 2 Zrunner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((run@1 PHRASE 2 runner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zrun@1 PHRASE 2 Zrunner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|cjk_ngram","stem":"none","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|cjk_ngram","stem":"some","description":"Query((running@1 PHRASE 2 runners@2))","error":""}
+{"query":"\"running runners\"","flags":"default|cjk_ngram","stem":"all","description":"Query((run@1 PHRASE 2 runner@2))","error":""}
+{"query":"\"running runners\"","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zrun@1 PHRASE 2 Zrunner@2))","error":""}
+{"query":"title:obama","flags":"default","stem":"none","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default","stem":"some","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default","stem":"all","description":"Query((titl@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default","stem":"all_z","description":"Query((Ztitl@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"title:obama","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((titl@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Ztitl@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"title:obama","flags":"default|wildcard|partial","stem":"none","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|wildcard|partial","stem":"some","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|wildcard|partial","stem":"all","description":"Query((titl@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Ztitl@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"title:obama","flags":"default|fuzzy","stem":"none","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|fuzzy","stem":"some","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|fuzzy","stem":"all","description":"Query((titl@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|fuzzy","stem":"all_z","description":"Query((Ztitl@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"title:obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((titl@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Ztitl@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"title:obama","flags":"default|cjk_ngram","stem":"none","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|cjk_ngram","stem":"some","description":"Query((title@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|cjk_ngram","stem":"all","description":"Query((titl@1 PHRASE 2 obama@2))","error":""}
+{"query":"title:obama","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Ztitl@1 PHRASE 2 Zobama@2))","error":""}
+{"query":"NOT obama","flags":"default","stem":"none","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default","stem":"some","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default","stem":"all","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default","stem":"all_z","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"boolean|phrase|lovehate","stem":"none","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"boolean|phrase|lovehate","stem":"some","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"boolean|phrase|lovehate","stem":"all","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"boolean|phrase|lovehate","stem":"all_z","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|wildcard|partial","stem":"none","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|wildcard|partial","stem":"some","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|wildcard|partial","stem":"all","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|wildcard|partial","stem":"all_z","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|fuzzy","stem":"none","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|fuzzy","stem":"some","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|fuzzy","stem":"all","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|fuzzy","stem":"all_z","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((0 * <alldocuments> AND_NOT obama@1))","error":""}
+{"query":"NOT obama","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((0 * <alldocuments> AND_NOT Zobama@1))","error":""}
+{"query":"NOT obama","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((0 * <alldocuments> AND_NOT obama@1))","error":""}
+{"query":"NOT obama","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((0 * <alldocuments> AND_NOT Zobama@1))","error":""}
+{"query":"NOT obama","flags":"default|cjk_ngram","stem":"none","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|cjk_ngram","stem":"some","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|cjk_ngram","stem":"all","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"NOT obama","flags":"default|cjk_ngram","stem":"all_z","description":"","error":"Syntax: <expression> NOT <expression>"}
+{"query":"Barack Obama's","flags":"default","stem":"none","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default","stem":"some","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"Barack Obama's","flags":"default","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"Barack Obama's","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"Barack Obama's","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"Barack Obama's","flags":"default|wildcard|partial","stem":"none","description":"Query((barack@1 OR (WILDCARD SYNONYM obama's OR obama's@2)))","error":""}
+{"query":"Barack Obama's","flags":"default|wildcard|partial","stem":"some","description":"Query((barack@1 OR (WILDCARD SYNONYM obama's OR obama's@2)))","error":""}
+{"query":"Barack Obama's","flags":"default|wildcard|partial","stem":"all","description":"Query((barack@1 OR (WILDCARD SYNONYM obama's OR obama@2)))","error":""}
+{"query":"Barack Obama's","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zbarack@1 OR (WILDCARD SYNONYM obama's OR Zobama@2)))","error":""}
+{"query":"Barack Obama's","flags":"default|fuzzy","stem":"none","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default|fuzzy","stem":"some","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default|fuzzy","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"Barack Obama's","flags":"default|fuzzy","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"Barack Obama's","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"Barack Obama's","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"Barack Obama's","flags":"default|cjk_ngram","stem":"none","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default|cjk_ngram","stem":"some","description":"Query((barack@1 OR obama's@2))","error":""}
+{"query":"Barack Obama's","flags":"default|cjk_ngram","stem":"all","description":"Query((barack@1 OR obama@2))","error":""}
+{"query":"Barack Obama's","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zbarack@1 OR Zobama@2))","error":""}
+{"query":"café naïve","flags":"default","stem":"none","description":"Query((café@1 OR naïve@2))","error":""}
+{"query":"café naïve","flags":"default","stem":"some","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default","stem":"all","description":"Query((café@1 OR naïv@2))","error":""}
+{"query":"café naïve","flags":"default","stem":"all_z","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((café@1 OR naïve@2))","error":""}
+{"query":"café naïve","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((café@1 OR naïv@2))","error":""}
+{"query":"café naïve","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default|wildcard|partial","stem":"none","description":"Query((café@1 OR (WILDCARD SYNONYM naïve OR naïve@2)))","error":""}
+{"query":"café naïve","flags":"default|wildcard|partial","stem":"some","description":"Query((Zcafé@1 OR (WILDCARD SYNONYM naïve OR Znaïv@2)))","error":""}
+{"query":"café naïve","flags":"default|wildcard|partial","stem":"all","description":"Query((café@1 OR (WILDCARD SYNONYM naïve OR naïv@2)))","error":""}
+{"query":"café naïve","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Zcafé@1 OR (WILDCARD SYNONYM naïve OR Znaïv@2)))","error":""}
+{"query":"café naïve","flags":"default|fuzzy","stem":"none","description":"Query((café@1 OR naïve@2))","error":""}
+{"query":"café naïve","flags":"default|fuzzy","stem":"some","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default|fuzzy","stem":"all","description":"Query((café@1 OR naïv@2))","error":""}
+{"query":"café naïve","flags":"default|fuzzy","stem":"all_z","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((café@1 OR naïve@2))","error":""}
+{"query":"café naïve","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((café@1 OR naïv@2))","error":""}
+{"query":"café naïve","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default|cjk_ngram","stem":"none","description":"Query((café@1 OR naïve@2))","error":""}
+{"query":"café naïve","flags":"default|cjk_ngram","stem":"some","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"café naïve","flags":"default|cjk_ngram","stem":"all","description":"Query((café@1 OR naïv@2))","error":""}
+{"query":"café naïve","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Zcafé@1 OR Znaïv@2))","error":""}
+{"query":"中文分词","flags":"default","stem":"none","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"default","stem":"some","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"default","stem":"all","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"default","stem":"all_z","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"boolean|phrase|lovehate","stem":"none","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"boolean|phrase|lovehate","stem":"some","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"boolean|phrase|lovehate","stem":"all","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|wildcard|partial","stem":"none","description":"Query((WILDCARD SYNONYM 中文分词 OR 中文分词@1))","error":""}
+{"query":"中文分词","flags":"default|wildcard|partial","stem":"some","description":"Query((WILDCARD SYNONYM 中文分词 OR Z中文分词@1))","error":""}
+{"query":"中文分词","flags":"default|wildcard|partial","stem":"all","description":"Query((WILDCARD SYNONYM 中文分词 OR 中文分词@1))","error":""}
+{"query":"中文分词","flags":"default|wildcard|partial","stem":"all_z","description":"Query((WILDCARD SYNONYM 中文分词 OR Z中文分词@1))","error":""}
+{"query":"中文分词","flags":"default|fuzzy","stem":"none","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|fuzzy","stem":"some","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|fuzzy","stem":"all","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|fuzzy","stem":"all_z","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query(中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query(Z中文分词@1)","error":""}
+{"query":"中文分词","flags":"default|cjk_ngram","stem":"none","description":"Query((中@1 AND 中文@1 AND 文@1 AND 文分@1 AND 分@1 AND 分词@1 AND 词@1))","error":""}
+{"query":"中文分词","flags":"default|cjk_ngram","stem":"some","description":"Query((中@1 AND 中文@1 AND 文@1 AND 文分@1 AND 分@1 AND 分词@1 AND 词@1))","error":""}
+{"query":"中文分词","flags":"default|cjk_ngram","stem":"all","description":"Query((中@1 AND 中文@1 AND 文@1 AND 文分@1 AND 分@1 AND 分词@1 AND 词@1))","error":""}
+{"query":"中文分词","flags":"default|cjk_ngram","stem":"all_z","description":"Query((中@1 AND 中文@1 AND 文@1 AND 文分@1 AND 分@1 AND 分词@1 AND 词@1))","error":""}
+{"query":"1990s-era","flags":"default","stem":"none","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default","stem":"some","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default","stem":"all","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default","stem":"all_z","description":"Query((Z1990s@1 PHRASE 2 Zera@2))","error":""}
+{"query":"1990s-era","flags":"boolean|phrase|lovehate","stem":"none","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"boolean|phrase|lovehate","stem":"some","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"boolean|phrase|lovehate","stem":"all","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"boolean|phrase|lovehate","stem":"all_z","description":"Query((Z1990s@1 PHRASE 2 Zera@2))","error":""}
+{"query":"1990s-era","flags":"default|wildcard|partial","stem":"none","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|wildcard|partial","stem":"some","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|wildcard|partial","stem":"all","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|wildcard|partial","stem":"all_z","description":"Query((Z1990s@1 PHRASE 2 Zera@2))","error":""}
+{"query":"1990s-era","flags":"default|fuzzy","stem":"none","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|fuzzy","stem":"some","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|fuzzy","stem":"all","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|fuzzy","stem":"all_z","description":"Query((Z1990s@1 PHRASE 2 Zera@2))","error":""}
+{"query":"1990s-era","flags":"default|boolean_any_case|pure_not","stem":"none","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|boolean_any_case|pure_not","stem":"some","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|boolean_any_case|pure_not","stem":"all","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|boolean_any_case|pure_not","stem":"all_z","description":"Query((Z1990s@1 PHRASE 2 Zera@2))","error":""}
+{"query":"1990s-era","flags":"default|cjk_ngram","stem":"none","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|cjk_ngram","stem":"some","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|cjk_ngram","stem":"all","description":"Query((1990s@1 PHRASE 2 era@2))","error":""}
+{"query":"1990s-era","flags":"default|cjk_ngram","stem":"all_z","description":"Query((Z1990s@1 PHRASE 2 Zera@2))","error":""}
