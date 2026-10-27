@@ -110,8 +110,9 @@ private:
 };
 
 enum class error_kind : std::uint8_t {
-	syntax,    // an operator lacks an operand
-	too_long,  // the text is over max_query_bytes
+	syntax,         // an operator lacks an operand, or a `-` follows OR, XOR or NOT
+	too_long,       // the text is over max_query_bytes, or its terms over config::max_term_bytes
+	out_of_memory,  // an allocation failed
 };
 
 struct error {
@@ -130,13 +131,20 @@ using field_resolver = std::function<bool(std::string_view name, field_spec& out
 // Query text over this size is rejected: node positions and offsets are 32 bits.
 inline constexpr std::size_t max_query_bytes = std::size_t(1) << 30;
 
+// The most term text a query may hold: nodes address the text pool with 32-bit offsets.
+inline constexpr std::size_t max_term_bytes_limit = 0xFFFFFFFFu;
+
 struct config {
 	std::uint32_t flags = default_flags;
 	analysis::stem_strategy stem = analysis::stem_strategy::some;
 	kind default_op = kind::or_;  // or_, and_, xor_ or and_maybe
 	snowball::stemmer* stemmer = nullptr;  // none: words are not stemmed
-	std::size_t max_word_length = 64;      // bytes after lowercasing; longer words are dropped
+	std::size_t max_word_length = 64;      // bytes after lowercasing; longer words are dropped (0 drops all);
+	                                       // a dropped word is no operand: `a AND <long word>` is a syntax error
 	field_resolver resolver;               // none: `name:x` is the phrase `name x`
+	// Total bytes of term text (a resolver prefix counts once per term). A query over it fails
+	// with too_long; a host may lower it to bound memory. Capped at max_term_bytes_limit.
+	std::size_t max_term_bytes = max_term_bytes_limit;
 };
 
 struct parse_result {
@@ -145,7 +153,13 @@ struct parse_result {
 	explicit operator bool() const noexcept { return !err; }
 };
 
-// Parses text; never throws on input.
+// Parses text. Input never makes it throw: a failed allocation becomes error_kind::out_of_memory
+// (describe() can still throw bad_alloc), and only an exception thrown by the resolver escapes.
+// Memory: up to 88 bytes per input byte (36 per node, 32 per open bracket, 16 per operand, vectors
+// that double), so a host bounds the text it passes, for example by its request size limit.
+// The tree is attacker-sized and as deep as a sixth of the text: walk it without recursion.
+// A default_op other than or_, and_, xor_ or and_maybe reads as or_. Views from query::text live as
+// long as the query object does, and are invalid after it is moved or copied from.
 parse_result parse(std::string_view text, const config& cfg = {});
 
 }  // namespace queryparser

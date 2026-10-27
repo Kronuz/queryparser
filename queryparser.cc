@@ -25,6 +25,7 @@
 #include "unicode.hh"
 
 #include <cstdio>
+#include <new>
 #include <utility>
 
 namespace queryparser {
@@ -117,17 +118,20 @@ std::string query::describe() const {
 	return out + ")";
 }
 
+namespace {
+// Thrown when the term text or the node count would not fit the 32-bit links.
+struct limit_exceeded {};
+}  // namespace
+
 // Builds a query's nodes.
 class builder {
 public:
-	explicit builder(query& q) : q_(q) {}
+	builder(query& q, std::size_t max_pool) : q_(q), max_pool_(max_pool < max_term_bytes_limit ? max_pool : max_term_bytes_limit) {}
 
 	node_id term(std::string_view text, std::uint32_t pos) {
 		node n;
 		n.pos = pos;
-		n.text_off = std::uint32_t(q_.pool_.size());
-		n.text_len = std::uint32_t(text.size());
-		q_.pool_.append(text);
+		store(n, text);
 		return push(n);
 	}
 
@@ -135,9 +139,7 @@ public:
 		node n;
 		n.k = k;
 		n.window = window;
-		n.text_off = std::uint32_t(q_.pool_.size());
-		n.text_len = std::uint32_t(text.size());
-		q_.pool_.append(text);
+		store(n, text);
 		return push(n);
 	}
 
@@ -211,11 +213,20 @@ public:
 	void reserve(std::size_t n) { q_.nodes_.reserve(n); }
 
 private:
+	// Appends text to the pool; the pool never exceeds max_pool_ bytes, so offsets cannot wrap.
+	void store(node& n, std::string_view text) {
+		if (text.size() > max_pool_ - q_.pool_.size()) { throw limit_exceeded{}; }
+		n.text_off = std::uint32_t(q_.pool_.size());
+		n.text_len = std::uint32_t(text.size());
+		q_.pool_.append(text);
+	}
 	node_id push(const node& n) {
+		if (q_.nodes_.size() >= no_node) { throw limit_exceeded{}; }
 		q_.nodes_.push_back(n);
 		return node_id(q_.nodes_.size() - 1);
 	}
 	query& q_;
+	std::size_t max_pool_;
 };
 
 namespace {
@@ -261,8 +272,10 @@ constexpr bool is_generator(char c) noexcept { return c == '-' || c == ':' || c 
 class parser {
 public:
 	parser(std::string_view text, const config& cfg, parse_result& out)
-	    : cfg_(cfg), b_(text.data()), e_(text.data() + text.size()), out_(out), bld_(out.tree) {
+	    : cfg_(cfg), b_(text.data()), e_(text.data() + text.size()), out_(out), bld_(out.tree, cfg.max_term_bytes) {
 		scanner_.cjk_ngram = cfg.flags & flag::cjk_ngram;
+		const kind d = cfg.default_op;
+		default_op_ = d == kind::and_ || d == kind::xor_ || d == kind::and_maybe ? d : kind::or_;
 	}
 
 	bool needs_reparse() const { return reparse_; }
@@ -640,7 +653,20 @@ private:
 	}
 
 	void push_operand(node_id n, mark m, std::size_t offset) {
-		if (!expect_) { reduce_all(); }
+		if (!expect_) {
+			reduce_all();
+		} else if (m != mark::none && ops_.size() > frames_.back().ops_base) {
+			// The right operand of an explicit operator: `a AND -b` is `a AND_NOT b`, a `+` adds
+			// nothing, and a `-` after OR, XOR or NOT would turn an exclusion into an inclusion.
+			pending_op& o = ops_.back();
+			if (m == mark::minus) {
+				if (o.k != kind::and_) {
+					fail_op(o.label, o.offset);
+					return;
+				}
+				o.k = kind::and_not;
+			}
+		}
 		vals_.push_back({n, m, offset});
 		expect_ = false;
 	}
@@ -680,7 +706,7 @@ private:
 		if (vals_.size() - first == 1 && vals_[first].m == mark::none) { return vals_[first].n; }
 		node_id req = no_node, opt = no_node, exc = no_node;
 		auto join = [&](node_id acc, kind k, node_id n) { return acc == no_node ? n : bld_.combine(k, acc, n); };
-		const bool all_required = cfg_.default_op == kind::and_;
+		const bool all_required = default_op_ == kind::and_;
 		for (std::size_t i = first; i < vals_.size(); ++i) {
 			const item& it = vals_[i];
 			if (it.m == mark::plus || (it.m == mark::none && all_required)) {
@@ -688,7 +714,7 @@ private:
 			} else if (it.m == mark::minus) {
 				exc = join(exc, kind::or_, it.n);
 			} else {
-				opt = join(opt, cfg_.default_op, it.n);
+				opt = join(opt, default_op_, it.n);
 			}
 		}
 		node_id res = req;
@@ -733,6 +759,7 @@ private:
 	bool expect_ = true;
 	bool failed_ = false;
 	bool reparse_ = false;
+	kind default_op_ = kind::or_;
 	mark pending_ = mark::none;
 	std::uint32_t termpos_ = 0;
 };
@@ -745,14 +772,22 @@ parse_result parse(std::string_view text, const config& cfg) {
 		res.err = error{error_kind::too_long, 0, "Query too long"};
 		return res;
 	}
-	parser first(text, cfg, res);
-	first.run();
-	if (first.needs_reparse()) {
-		// Plain words: no operators and no expansion.
-		config plain = cfg;
-		plain.flags &= ~(flag::boolean | flag::wildcard | flag::partial);
+	try {
+		parser first(text, cfg, res);
+		first.run();
+		if (first.needs_reparse()) {
+			// Plain words: no operators and no expansion.
+			config plain = cfg;
+			plain.flags &= ~(flag::boolean | flag::wildcard | flag::partial);
+			res = parse_result{};
+			parser(text, plain, res).run();
+		}
+	} catch (const limit_exceeded&) {
 		res = parse_result{};
-		parser(text, plain, res).run();
+		res.err = error{error_kind::too_long, 0, "Query too long"};
+	} catch (const std::bad_alloc&) {
+		res = parse_result{};
+		res.err = error{error_kind::out_of_memory, 0, "Out of memory"};
 	}
 	return res;
 }

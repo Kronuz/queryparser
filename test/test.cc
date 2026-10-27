@@ -2,6 +2,7 @@
 // the vectors, the expected text records what this parser does (V2 will confirm it).
 #include "queryparser.hh"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -90,6 +91,50 @@ int main() {
 	// Unbalanced brackets.
 	CHECK_EQ(P("(a b"), "Query((a@1 OR b@2))");
 	CHECK_EQ(P("a) b"), "Query((a@1 OR b@2))");
+	// A stray `)` closes nothing, also at the start of the text (a no-op frame pop would be undefined).
+	CHECK_EQ(P(")))"), "Query()");
+	CHECK_EQ(P(")a"), "Query(a@1)");
+	CHECK_EQ(P("a)))"), "Query(a@1)");
+	CHECK_EQ(P(") (a b)"), "Query((a@1 OR b@2))");
+	// Unclosed brackets close at the end of the text (V2, group parens, stopper none).
+	CHECK_EQ(P("(a"), "Query(a@1)");
+	CHECK_EQ(P("+(a"), "Query(a@1)");
+	CHECK_EQ(P("(a OR (b"), "Query((a@1 OR b@2))");
+	CHECK_EQ(P("((a OR b) AND c"), "Query(((a@1 OR b@2) AND c@3))");
+	CHECK_EQ(P("("), "Query()");
+	CHECK_EQ(P("NOT (a"), "ERROR Syntax: <expression> NOT <expression>");
+	CHECK_EQ(P("(a AND"), "ERROR Syntax: <expression> AND <expression>");
+	// A mark after an explicit operator (V2, group plusminus): `-` after AND excludes.
+	CHECK_EQ(P("a AND -b"), "Query((a@1 AND_NOT b@2))");
+	CHECK_EQ(P("a AND -b AND c"), "Query(((a@1 AND_NOT b@2) AND c@3))");
+	CHECK_EQ(P("a OR b AND -c"), "Query((a@1 OR (b@2 AND_NOT c@3)))");
+	CHECK_EQ(P("a AND -(b c)"), "Query((a@1 AND_NOT (b@2 OR c@3)))");
+	CHECK_EQ(P("a AND -\"b c\""), "Query((a@1 AND_NOT (b@2 PHRASE 2 c@3)))");
+	CHECK_EQ(P("a AND +b"), "Query((a@1 AND b@2))");
+	CHECK_EQ(P("a OR +b"), "Query((a@1 OR b@2))");
+	CHECK_EQ(P("+a OR b"), "Query((a@1 OR b@2))");
+	CHECK_EQ(P("+a AND b"), "Query((a@1 AND b@2))");
+	CHECK_EQ(P("a NOT +b"), "Query((a@1 AND_NOT b@2))");
+	CHECK_EQ(P("a NOT -b"), "ERROR Syntax: <expression> NOT <expression>");
+	CHECK_EQ(P("a AND NOT -b"), "ERROR Syntax: <expression> NOT <expression>");
+	// Not in V2: a `-` after OR or XOR is an error rather than a silent inclusion.
+	CHECK_EQ(P("a OR -b"), "ERROR Syntax: <expression> OR <expression>");
+	CHECK_EQ(P("a XOR -b"), "ERROR Syntax: <expression> XOR <expression>");
+	CHECK_EQ(P("a OR -(b)"), "ERROR Syntax: <expression> OR <expression>");
+	// A mark consumed by a dropped word does not move to the next operand.
+	CHECK_EQ(P("+" + std::string(70, 'a') + " b c"), "Query((b@1 OR c@2))");
+	CHECK_EQ(P("-" + std::string(70, 'a') + " b c"), "Query((b@1 OR c@2))");
+	CHECK_EQ(P("b +" + std::string(70, 'a') + " c"), "Query((b@1 OR c@2))");
+	// Window arithmetic: the distance digits clamp, so a huge NEAR/n cannot wrap.
+	CHECK_EQ(P("a NEAR/4294967296 b"), "Query((a@1 NEAR 4294967295 b@2))");
+	CHECK_EQ(P("a NEAR/99999999999999999999999999 b"), "Query((a@1 NEAR 4294967295 b@2))");
+	CHECK_EQ(P("a ADJ/18446744073709551617 b"), "Query((a@1 PHRASE 4294967295 b@2))");
+	{
+		config f = plain();
+		f.flags = default_flags | flag::fuzzy;
+		CHECK_EQ(run("ab~4294967296", f), "Query(EDIT_DISTANCE SYNONYM ab~4294967295)");
+		CHECK_EQ(run("ab~99999999999999999999999", f), "Query(EDIT_DISTANCE SYNONYM ab~4294967295)");
+	}
 	// Flags off: the syntax is plain separators and words.
 	{
 		config c = plain();
@@ -108,9 +153,20 @@ int main() {
 		c.default_op = kind::and_;
 		CHECK_EQ(run("a b", c), "Query((a@1 AND b@2))");
 		CHECK_EQ(run("a b -c", c), "Query(((a@1 AND b@2) AND_NOT c@3))");
+		// V2 (precedence) differs from the next row: `a OR b c` is `(a OR (b AND c))`; T2 settles it.
 		CHECK_EQ(run("a OR b c", c), "Query(((a@1 OR b@2) AND c@3))");
 		c.default_op = kind::xor_;
 		CHECK_EQ(run("a b", c), "Query((a@1 XOR b@2))");
+		// Marks with default AND: every unmarked item is required (V2, group plusminus).
+		c.default_op = kind::and_;
+		CHECK_EQ(run("+a b", c), "Query((a@1 AND b@2))");
+		CHECK_EQ(run("+a b -c d", c), "Query(((a@1 AND b@2 AND d@4) AND_NOT c@3))");
+		CHECK_EQ(run("a AND -b", c), "Query((a@1 AND_NOT b@2))");
+		// A default operator that is not one of the four is OR.
+		c.default_op = kind::near;
+		CHECK_EQ(run("a b", c), "Query((a@1 OR b@2))");
+		c.default_op = kind::term;
+		CHECK_EQ(run("a b", c), "Query((a@1 OR b@2))");
 	}
 	// Stemming strategies.
 	{
@@ -142,6 +198,51 @@ int main() {
 		CHECK_EQ(run("title:obama", c), "Query(Sobama@1)");
 		CHECK_EQ(run("title:\"a b\" x:y", c), "Query(((Sa@1 PHRASE 2 Sb@2) OR (x@3 PHRASE 2 y@4)))");
 		CHECK_EQ(run("title: a", c), "Query(a@1)");
+		// Under `some` a stemmed term is `Z`, then the field prefix (V2: ZSbarack).
+		c.stem = analysis::stem_strategy::some;
+		CHECK_EQ(run("title:running", c), "Query(ZSrun@1)");
+		CHECK_EQ(run("title:Running", c), "Query(Srunning@1)");
+		c.stem = analysis::stem_strategy::all_z;
+		CHECK_EQ(run("title:\"runs ran\"", c), "Query((ZSrun@1 PHRASE 2 ZSran@2))");
+	}
+	// Term text is bounded: a query whose terms exceed max_term_bytes fails with too_long.
+	{
+		config c = plain();
+		c.max_term_bytes = 4;
+		auto kind_of = [&](std::string_view q) {
+			const auto r = parse(q, c);
+			return r.err ? std::to_string(int(r.err->kind)) : std::string("ok");
+		};
+		const std::string ok = "ok", too_long = std::to_string(int(error_kind::too_long));
+		CHECK_EQ(kind_of("abcd"), ok);
+		CHECK_EQ(kind_of("abcde"), too_long);
+		CHECK_EQ(kind_of("ab cd"), ok);
+		CHECK_EQ(kind_of("ab cd e"), too_long);
+		c.max_term_bytes = 0;
+		CHECK_EQ(kind_of("a"), too_long);
+		CHECK_EQ(kind_of(""), ok);
+		// Wildcard and edit-distance leaves count too.
+		c.max_term_bytes = 4;
+		c.flags = default_flags | flag::wildcard | flag::fuzzy;
+		CHECK_EQ(kind_of("abcd*"), ok);
+		CHECK_EQ(kind_of("abcde*"), too_long);
+		CHECK_EQ(kind_of("abcd~"), ok);
+		CHECK_EQ(kind_of("abcde~"), too_long);
+		c.flags = default_flags;
+		// A resolver prefix is copied into every term.
+		c.max_term_bytes = 90;
+		c.resolver = [](std::string_view name, field_spec& out) {
+			if (name != "t") { return false; }
+			out.prefix = std::string(30, 'P');
+			return true;
+		};
+		CHECK_EQ(kind_of("t:a-a"), ok);                // 2 x 31 bytes, under 90
+		CHECK_EQ(kind_of("t:a-a-a"), too_long);        // 3 x 31 bytes, over 90
+		CHECK_EQ(kind_of("t:\"a a a\" b"), too_long);
+		c.max_term_bytes = std::size_t(1) << 40;       // clamped to the 32-bit limit
+		CHECK_EQ(kind_of("t:a-a"), ok);
+		const auto r = parse("t:a-a-a", [&] { config d = plain(); d.max_term_bytes = 90; d.resolver = c.resolver; return d; }());
+		CHECK_EQ(r.err ? std::to_string(r.err->offset) : "none", "0");
 	}
 	// Step 2: wildcard, partial, fuzzy, CJK n-grams, pure NOT, any-case operators.
 	{
@@ -197,6 +298,17 @@ int main() {
 		CHECK_EQ(run("a And b", ac), "Query((a@1 AND b@2))");
 		CHECK_EQ(run("a near b", ac), "Query((a@1 OR near@2 OR b@3))");
 		CHECK_EQ(run("a and b", plain()), "Query((a@1 OR and@2 OR b@3))");
+	}
+	// An acronym chain that is not an acronym parses in linear time (the quadratic walk took 1.9 s here).
+	{
+		std::string chain;
+		while (chain.size() < 65536) { chain += "A."; }
+		chain += "x";
+		const auto t0 = std::chrono::steady_clock::now();
+		const auto r = parse(chain, plain());
+		const double secs = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+		CHECK_EQ(r.err ? "error" : "ok", "ok");
+		CHECK_EQ(secs < 0.5 ? "fast" : "slow " + std::to_string(secs), "fast");
 	}
 	// The tree can be walked.
 	{
