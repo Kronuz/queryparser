@@ -41,6 +41,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   add_executable(queryparser_oom test/oom.cc)
   target_link_libraries(queryparser_oom PRIVATE queryparser)
   add_test(NAME oom COMMAND queryparser_oom)
+  set_tests_properties(oom PROPERTIES SKIP_RETURN_CODE 77)
 
   add_executable(queryparser_random test/random.cc)
   target_link_libraries(queryparser_random PRIVATE queryparser)

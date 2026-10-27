@@ -7,6 +7,15 @@
 #include <new>
 #include <string>
 
+#if defined(__SANITIZE_THREAD__)
+#define QP_TSAN 1
+#elif defined(__has_feature)
+#if __has_feature(thread_sanitizer)
+#define QP_TSAN 1
+#endif
+#endif
+
+#ifndef QP_TSAN
 static std::size_t allocations = 0;
 static std::size_t fail_at = 0;  // the allocation to fail, 1-based; 0: none
 
@@ -18,8 +27,13 @@ void* operator new(std::size_t n) {
 }
 void operator delete(void* p) noexcept { std::free(p); }
 void operator delete(void* p, std::size_t) noexcept { std::free(p); }
+#endif
 
 int main() {
+#ifdef QP_TSAN
+	std::puts("oom: skipped under TSan, whose runtime owns operator new");
+	return 77;
+#else
 	static snowball::stemmer english("english");
 	using namespace queryparser;
 	config cfg;
@@ -64,4 +78,5 @@ int main() {
 	fail_at = 0;
 	std::printf("queryparser oom: %zu failure points: %s\n", points, failures ? "FAILED" : "ok");
 	return failures ? EXIT_FAILURE : EXIT_SUCCESS;
+#endif
 }
