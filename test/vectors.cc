@@ -73,7 +73,11 @@ int main(int argc, char** argv) {
 	}
 	snowball::stemmer english("english");
 	const std::map<std::string, std::uint32_t> names = {{"default", queryparser::default_flags}, {"boolean", queryparser::flag::boolean},
-	                                                    {"phrase", queryparser::flag::phrase}, {"lovehate", queryparser::flag::lovehate}};
+	                                                    {"phrase", queryparser::flag::phrase}, {"lovehate", queryparser::flag::lovehate},
+	                                                    {"wildcard", queryparser::flag::wildcard}, {"partial", queryparser::flag::partial},
+	                                                    {"fuzzy", queryparser::flag::fuzzy}, {"cjk_ngram", queryparser::flag::cjk_ngram},
+	                                                    {"pure_not", queryparser::flag::pure_not},
+	                                                    {"boolean_any_case", queryparser::flag::boolean_any_case}};
 	const std::map<std::string, analysis::stem_strategy> stems = {{"none", analysis::stem_strategy::none}, {"some", analysis::stem_strategy::some},
 	                                                              {"all", analysis::stem_strategy::all}, {"all_z", analysis::stem_strategy::all_z}};
 	std::size_t matched = 0, excepted = 0, failed = 0, skipped = 0, unused = 0;

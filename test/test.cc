@@ -143,6 +143,61 @@ int main() {
 		CHECK_EQ(run("title:\"a b\" x:y", c), "Query(((Sa@1 PHRASE 2 Sb@2) OR (x@3 PHRASE 2 y@4)))");
 		CHECK_EQ(run("title: a", c), "Query(a@1)");
 	}
+	// Step 2: wildcard, partial, fuzzy, CJK n-grams, pure NOT, any-case operators.
+	{
+		auto with = [](std::uint32_t extra) {
+			config c = plain();
+			c.flags = default_flags | extra;
+			return c;
+		};
+		const config w = with(flag::wildcard), pa = with(flag::partial), fz = with(flag::fuzzy);
+		CHECK_EQ(run("obam*", w), "Query(WILDCARD SYNONYM obam)");
+		CHECK_EQ(run("Obam* foo", w), "Query((WILDCARD SYNONYM obam OR foo@1))");
+		CHECK_EQ(run("obam* AND x-y*", w), "Query((WILDCARD SYNONYM obam AND (x@1 PHRASE 2 y@2)))");
+		CHECK_EQ(run("obam*", plain()), "Query(obam@1)");
+		// Partial: only the last word, at the end of the text, of two or more characters.
+		CHECK_EQ(run("foo ba", pa), "Query((foo@1 OR (WILDCARD SYNONYM ba OR ba@2)))");
+		CHECK_EQ(run("foo b", pa), "Query((foo@1 OR b@2))");
+		CHECK_EQ(run("foo ba ", pa), "Query((foo@1 OR ba@2))");
+		CHECK_EQ(run("foo \"ba\"", pa), "Query((foo@1 OR ba@2))");
+		CHECK_EQ(run("foo b-a", pa), "Query((foo@1 OR (b@2 PHRASE 2 a@3)))");
+		CHECK_EQ(run("foo OR bar OR baz", pa), "Query((foo@1 OR bar@2 OR (WILDCARD SYNONYM baz OR baz@3)))");
+		CHECK_EQ(run("é", pa), "Query(é@1)");
+		CHECK_EQ(run("éa", pa), "Query((WILDCARD SYNONYM éa OR éa@1))");
+		// NEAR or ADJ next to an expanding word reads the text as plain words.
+		CHECK_EQ(run("foo NEAR bar", pa), "Query((foo@1 OR near@2 OR bar@3))");
+		CHECK_EQ(run("foo NEAR b", pa), "Query((foo@1 NEAR 11 b@2))");
+		CHECK_EQ(run("foo* ADJ bar", w), "Query((foo@1 OR adj@2 OR bar@3))");
+		CHECK_EQ(run("foo NEAR bar baz*", w), "Query(((foo@1 NEAR 11 bar@2) OR WILDCARD SYNONYM baz))");
+		CHECK_EQ(run("foo AND bar NEAR baz*", w), "Query((foo@1 OR and@2 OR bar@3 OR near@4 OR baz@5))");
+		// Fuzzy.
+		CHECK_EQ(run("ab~", fz), "Query(EDIT_DISTANCE SYNONYM ab~2)");
+		CHECK_EQ(run("Ab~1", fz), "Query(EDIT_DISTANCE SYNONYM ab~1)");
+		CHECK_EQ(run("(ab~) cd~ ef", fz), "Query((EDIT_DISTANCE SYNONYM ab~2 OR EDIT_DISTANCE SYNONYM cd~2 OR ef@1))");
+		CHECK_EQ(run("ab~1 cd", fz), "Query((ab@1 OR 1@2 OR cd@3))");
+		CHECK_EQ(run("ab~x", fz), "Query((ab@1 OR x@2))");
+		CHECK_EQ(run("ab~", plain()), "Query(ab@1)");
+		// CJK n-grams.
+		const config cj = with(flag::cjk_ngram);
+		CHECK_EQ(run("中", cj), "Query(中@1)");
+		CHECK_EQ(run("中文", cj), "Query((中@1 AND 中文@1 AND 文@1))");
+		CHECK_EQ(run("foo中文 bar", cj), "Query((foo@1 OR (中@2 AND 中文@2 AND 文@2) OR bar@3))");
+		CHECK_EQ(run("中文", plain()), "Query(中文@1)");
+		// Pure NOT.
+		const config pn = with(flag::pure_not);
+		CHECK_EQ(run("NOT a", pn), "Query((0 * <alldocuments> AND_NOT a@1))");
+		CHECK_EQ(run("-a", pn), "Query((0 * <alldocuments> AND_NOT a@1))");
+		CHECK_EQ(run("b (NOT a)", pn), "Query((b@1 OR (0 * <alldocuments> AND_NOT a@2)))");
+		CHECK_EQ(run("b AND NOT a", pn), "Query((b@1 AND_NOT a@2))");
+		CHECK_EQ(run("NOT", pn), "ERROR Syntax: <expression> NOT <expression>");
+		// Any-case operators.
+		const config ac = with(flag::boolean_any_case);
+		CHECK_EQ(run("a and b or c not d xor e", ac), "Query(((a@1 AND b@2) OR ((c@3 AND_NOT d@4) XOR e@5)))");
+		CHECK_EQ(run("a and not b", ac), "Query((a@1 AND_NOT b@2))");
+		CHECK_EQ(run("a And b", ac), "Query((a@1 AND b@2))");
+		CHECK_EQ(run("a near b", ac), "Query((a@1 OR near@2 OR b@3))");
+		CHECK_EQ(run("a and b", plain()), "Query((a@1 OR and@2 OR b@3))");
+	}
 	// The tree can be walked.
 	{
 		const auto r = parse("a b", plain());

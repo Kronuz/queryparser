@@ -12,7 +12,7 @@ int main() {
 	snowball::stemmer english("english");
 	std::mt19937_64 rng(12345);
 	const std::string syntax = " ()\"+-:./@\\ANDORXNEAJTab12";
-	const char* words[] = {" AND ", " OR ", " NOT ", " XOR ", " NEAR/3 ", " ADJ ", "(", ")", "\"", "-", "+", "a", "bb", "foo", "U.S.A.", "x-y"};
+	const char* words[] = {" AND ", " OR ", " NOT ", " XOR ", " NEAR/3 ", " ADJ ", "(", ")", "\"", "-", "+", "a", "bb", "foo", "U.S.A.", "x-y", "foo*", "ab~", "~2", "NEAR ", "\xe4\xb8\xad\xe6\x96\x87"};
 	std::size_t checked = 0;
 	for (int round = 0; round < 6; ++round) {
 		std::string s;
@@ -25,7 +25,7 @@ int main() {
 			}
 		}
 		s.resize(size);
-		for (std::uint32_t flags : {queryparser::default_flags, 0u, queryparser::flag::boolean}) {
+		for (std::uint32_t flags : {queryparser::default_flags, 0u, queryparser::flag::boolean, 0x1FFu, 0x1FFu & ~queryparser::flag::boolean}) {
 			queryparser::config cfg;
 			cfg.flags = flags;
 			cfg.stemmer = &english;

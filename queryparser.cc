@@ -24,6 +24,7 @@
 
 #include "unicode.hh"
 
+#include <cstdio>
 #include <utility>
 
 namespace queryparser {
@@ -42,7 +43,7 @@ const char* op_name(kind k) noexcept {
 		case kind::synonym: return "SYNONYM";
 		case kind::elite_set: return "ELITE_SET";
 		case kind::max: return "MAX";
-		case kind::term: break;
+		default: break;
 	}
 	return "";
 }
@@ -55,24 +56,48 @@ std::string query::describe() const {
 	struct frame {
 		node_id id;
 		node_id cursor;
+		bool paren;
 	};
-	auto term = [&](const node& n) {
-		out += text(n);
-		out += '@';
-		out += std::to_string(n.pos);
-	};
-	if (nodes_[root_].k == kind::term) {
-		term(nodes_[root_]);
-		return out + ")";
-	}
 	std::vector<frame> stack;
-	stack.push_back({root_, nodes_[root_].first});
-	out += '(';
+	// Prints a leaf, or opens the frame of an operator or scale.
+	auto enter = [&](node_id id) {
+		const node& n = nodes_[id];
+		switch (n.k) {
+			case kind::term:
+				out += text(n);
+				out += '@';
+				out += std::to_string(n.pos);
+				break;
+			case kind::wildcard:
+				out += "WILDCARD SYNONYM ";
+				out += text(n);
+				break;
+			case kind::edit_distance:
+				out += "EDIT_DISTANCE SYNONYM ";
+				out += text(n);
+				out += '~';
+				out += std::to_string(n.window);
+				break;
+			case kind::match_all: out += "<alldocuments>"; break;
+			case kind::scale: {
+				char buf[32];
+				std::snprintf(buf, sizeof buf, "%g", n.factor);
+				out += buf;
+				out += " * ";
+				stack.push_back({id, n.first, false});
+				break;
+			}
+			default:
+				out += '(';
+				stack.push_back({id, n.first, true});
+		}
+	};
+	enter(root_);
 	while (!stack.empty()) {
 		frame& f = stack.back();
 		const node& n = nodes_[f.id];
 		if (f.cursor == no_node) {
-			out += ')';
+			if (f.paren) { out += ')'; }
 			stack.pop_back();
 			continue;
 		}
@@ -87,13 +112,7 @@ std::string query::describe() const {
 			out += ' ';
 		}
 		f.cursor = nodes_[child].next;
-		const node& c = nodes_[child];
-		if (c.k == kind::term) {
-			term(c);
-		} else {
-			out += '(';
-			stack.push_back({child, c.first});
-		}
+		enter(child);
 	}
 	return out + ")";
 }
@@ -112,10 +131,33 @@ public:
 		return push(n);
 	}
 
-	node_id op(kind k, std::uint32_t window = 0) {
+	node_id leaf(kind k, std::string_view text, std::uint32_t window = 0) {
 		node n;
 		n.k = k;
 		n.window = window;
+		n.text_off = std::uint32_t(q_.pool_.size());
+		n.text_len = std::uint32_t(text.size());
+		q_.pool_.append(text);
+		return push(n);
+	}
+
+	node_id match_all_scaled(double factor) {
+		node m;
+		m.k = kind::match_all;
+		const node_id c = push(m);
+		node s;
+		s.k = kind::scale;
+		s.factor = factor;
+		const node_id id = push(s);
+		add(id, c);
+		return id;
+	}
+
+	node_id op(kind k, std::uint32_t window = 0, bool solid = false) {
+		node n;
+		n.k = k;
+		n.window = window;
+		n.solid = solid;
 		return push(n);
 	}
 
@@ -148,14 +190,15 @@ public:
 	// l OP r, where AND, OR and XOR chains stay one n-ary node.
 	node_id combine(kind k, node_id l, node_id r) {
 		const bool flat = k == kind::and_ || k == kind::or_ || k == kind::xor_;
+		auto same = [&](node_id id) { return flat && q_.nodes_[id].k == k && !q_.nodes_[id].solid; };
 		node_id res;
-		if (flat && q_.nodes_[l].k == k) {
+		if (same(l)) {
 			res = l;
 		} else {
 			res = op(k);
 			add(res, l);
 		}
-		if (flat && q_.nodes_[r].k == k) {
+		if (same(r)) {
 			splice(res, r);
 		} else {
 			add(res, r);
@@ -219,8 +262,10 @@ class parser {
 public:
 	parser(std::string_view text, const config& cfg, parse_result& out)
 	    : cfg_(cfg), b_(text.data()), e_(text.data() + text.size()), out_(out), bld_(out.tree) {
-		scanner_.cjk_ngram = false;
+		scanner_.cjk_ngram = cfg.flags & flag::cjk_ngram;
 	}
+
+	bool needs_reparse() const { return reparse_; }
 
 	void run() {
 		frames_.push_back({0, 0, true, mark::none, 0});
@@ -236,6 +281,7 @@ private:
 	bool boolean() const { return cfg_.flags & flag::boolean; }
 	bool phrase() const { return cfg_.flags & flag::phrase; }
 	bool lovehate() const { return cfg_.flags & flag::lovehate; }
+	bool has(std::uint32_t f) const { return cfg_.flags & f; }
 
 	std::size_t off(const char* p) const { return std::size_t(p - b_); }
 	bool word_at(const char* p) const {
@@ -251,10 +297,17 @@ private:
 	void fail_op(const char* label, std::size_t offset) { fail(offset, std::string("Syntax: <expression> ") + label + " <expression>"); }
 
 	// True when the uppercase keyword w starts at p and is not followed by a word character.
-	bool keyword(const char* p, std::string_view w) const {
-		if (std::size_t(e_ - p) < w.size() || std::string_view(p, w.size()) != w) { return false; }
+	bool keyword(const char* p, std::string_view w, bool any_case = false) const {
+		if (std::size_t(e_ - p) < w.size()) { return false; }
+		for (std::size_t i = 0; i < w.size(); ++i) {
+			const char c = any_case && p[i] >= 'a' && p[i] <= 'z' ? char(p[i] - 'a' + 'A') : p[i];
+			if (c != w[i]) { return false; }
+		}
 		return !word_at(p + w.size());
 	}
+
+	// AND, OR, NOT and XOR, in any case under boolean_any_case.
+	bool op_word(const char* p, std::string_view w) const { return keyword(p, w, has(flag::boolean_any_case)); }
 
 	const char* step(const char* p) {
 		const char c = *p;
@@ -272,7 +325,9 @@ private:
 			}
 		}
 		const char* q = p;
-		if (!analysis::is_word_char(unicode::next_utf8(q, e_))) { return q; }
+		const char32_t c0 = unicode::next_utf8(q, e_);
+		if (!analysis::is_word_char(c0)) { return q; }
+		if (has(flag::cjk_ngram) && analysis::is_ngram_char(c0)) { return ngram_run(p); }
 		if (boolean()) {
 			if (const char* r = binary_keyword(p)) { return r; }
 		}
@@ -283,25 +338,25 @@ private:
 		kind k;
 		const char* label = "AND";
 		const char* r = p;
-		if (keyword(p, "AND")) {
+		if (op_word(p, "AND")) {
 			k = kind::and_;
 			r = p + 3;
 			const char* s = r;
 			while (s < e_ && (*s == ' ' || (*s >= '\t' && *s <= '\r'))) { ++s; }
-			if (s > r && keyword(s, "NOT")) {
+			if (s > r && op_word(s, "NOT")) {
 				k = kind::and_not;
 				label = "NOT";
 				r = s + 3;
 			}
-		} else if (keyword(p, "OR")) {
+		} else if (op_word(p, "OR")) {
 			k = kind::or_;
 			label = "OR";
 			r = p + 2;
-		} else if (keyword(p, "NOT")) {
+		} else if (op_word(p, "NOT")) {
 			k = kind::and_not;
 			label = "NOT";
 			r = p + 3;
-		} else if (keyword(p, "XOR")) {
+		} else if (op_word(p, "XOR")) {
 			k = kind::xor_;
 			label = "XOR";
 			r = p + 3;
@@ -313,8 +368,12 @@ private:
 			return nullptr;
 		}
 		if (expect_) {
-			fail_op(label, off(p));
-			return e_;
+			if (k != kind::and_not || !has(flag::pure_not)) {
+				fail_op(label, off(p));
+				return e_;
+			}
+			vals_.push_back({bld_.match_all_scaled(0), mark::none, off(p)});
+			expect_ = false;
 		}
 		while (ops_.size() > frames_.back().ops_base && prec(ops_.back().k) >= prec(k)) { reduce(); }
 		ops_.push_back({k, off(p), label});
@@ -365,9 +424,10 @@ private:
 		std::uint32_t distance = 10;
 		bool proximity = false;
 		while (boolean()) {
-			const char* s = r;
+			const char* s0 = has(flag::wildcard) && r < e_ && *r == '*' ? r + 1 : r;
+			const char* s = s0;
 			while (s < e_ && (*s == ' ' || (*s >= '\t' && *s <= '\r'))) { ++s; }
-			if (s == r) { break; }
+			if (s == s0) { break; }
 			kind k;
 			if (keyword(s, "NEAR") || (s + 4 < e_ && std::string_view(s, 4) == "NEAR" && s[4] == '/')) {
 				k = kind::near;
@@ -405,6 +465,7 @@ private:
 				prox = k;
 				distance = n;
 			}
+			if (expands(r, words.back())) { return reparse(); }
 			proximity = true;
 			raw_word nw;
 			r = take_word(x, e_, nw);
@@ -414,13 +475,99 @@ private:
 				r = take_word(r + 1, e_, gw);
 				words.push_back(std::move(gw));
 			}
+			if (expands(r, words.back())) { return reparse(); }
 		}
 		if (proximity) {
 			operand(finish(words, prefix, prox, true, distance), off(p));
+		} else if (!generated && words[0].text.size() <= cfg_.max_word_length) {
+			r = single(words[0], prefix, r, p);
 		} else {
 			operand(finish(words, prefix, generated ? kind::phrase : kind::term, false, 0), off(p));
 		}
 		return r;
+	}
+
+	// The word ends at r: would it become a wildcard or a partial term?
+	bool expands(const char* r, const raw_word& w) const {
+		if (has(flag::wildcard) && r < e_ && *r == '*') { return true; }
+		return has(flag::partial) && r == e_ && code_points(w.text) >= 2;
+	}
+
+	static std::size_t code_points(const std::string& s) {
+		std::size_t n = 0;
+		for (unsigned char c : s) { n += (c & 0xC0) != 0x80; }
+		return n;
+	}
+
+	// An expanding word inside NEAR or ADJ: the text is parsed again as plain words.
+	const char* reparse() {
+		reparse_ = true;
+		failed_ = true;
+		return e_;
+	}
+
+	// A lone word: a term, or a wildcard, edit-distance or partial query. Returns where
+	// the item ends.
+	const char* single(const raw_word& w, const std::string& prefix, const char* r, const char* start) {
+		if (has(flag::wildcard) && r < e_ && *r == '*') {
+			operand(bld_.leaf(kind::wildcard, prefix + w.text), off(start));
+			return r + 1;
+		}
+		if (has(flag::fuzzy) && r < e_ && *r == '~') {
+			const char* j = r + 1;
+			const char* d = j;
+			std::uint64_t v = 0;
+			while (d < e_ && *d >= '0' && *d <= '9') {
+				v = v * 10 + std::uint64_t(*d - '0');
+				if (v > 0xFFFFFFFFu) { v = 0xFFFFFFFFu; }
+				++d;
+			}
+			if (d == j && !word_at(j)) {
+				operand(bld_.leaf(kind::edit_distance, prefix + w.text, 2), off(start));
+				return j;
+			}
+			if (d > j && d == e_) {
+				operand(bld_.leaf(kind::edit_distance, prefix + w.text, std::uint32_t(v)), off(start));
+				return d;
+			}
+		}
+		if (has(flag::partial) && r == e_ && code_points(w.text) >= 2) {
+			const node_id wc = bld_.leaf(kind::wildcard, prefix + w.text);
+			const node_id t = make_term(w, prefix, false);
+			const node_id pair = bld_.op(kind::or_, 0, true);
+			bld_.add(pair, wc);
+			bld_.add(pair, t);
+			operand(pair, off(start));
+			return r;
+		}
+		std::vector<raw_word> one{w};
+		operand(finish(one, prefix, kind::term, false, 0), off(start));
+		return r;
+	}
+
+	// A run of CJK-like characters: unigrams and bigrams ANDed at one position.
+	const char* ngram_run(const char* p) {
+		std::vector<std::string> units;
+		while (p < e_) {
+			const char* q = p;
+			const char32_t c = unicode::next_utf8(q, e_);
+			if (!analysis::is_word_char(c) || !analysis::is_ngram_char(c)) { break; }
+			units.emplace_back();
+			unicode::append_utf8(units.back(), unicode::tolower(c));
+			p = q;
+		}
+		const std::uint32_t pos = ++termpos_;
+		node_id res = no_node;
+		auto add = [&](std::string_view t) {
+			const node_id n = bld_.term(t, pos);
+			res = res == no_node ? n : bld_.combine(kind::and_, res, n);
+		};
+		for (std::size_t i = 0; i < units.size(); ++i) {
+			if (units[i].size() <= cfg_.max_word_length) { add(units[i]); }
+			if (i + 1 < units.size()) { add(units[i] + units[i + 1]); }
+		}
+		operand(res, std::size_t(p - b_));
+		return p;
 	}
 
 	const char* quoted(const char* p, std::string prefix = {}) {
@@ -551,6 +698,7 @@ private:
 			res = bld_.combine(kind::and_maybe, res, opt);
 		}
 		if (exc != no_node) {
+			if (res == no_node && has(flag::pure_not)) { res = bld_.match_all_scaled(0); }
 			if (res == no_node) {
 				fail_op("NOT", vals_[first].offset);
 				return no_node;
@@ -584,6 +732,7 @@ private:
 	std::vector<frame> frames_;
 	bool expect_ = true;
 	bool failed_ = false;
+	bool reparse_ = false;
 	mark pending_ = mark::none;
 	std::uint32_t termpos_ = 0;
 };
@@ -596,7 +745,15 @@ parse_result parse(std::string_view text, const config& cfg) {
 		res.err = error{error_kind::too_long, 0, "Query too long"};
 		return res;
 	}
-	parser(text, cfg, res).run();
+	parser first(text, cfg, res);
+	first.run();
+	if (first.needs_reparse()) {
+		// Plain words: no operators and no expansion.
+		config plain = cfg;
+		plain.flags &= ~(flag::boolean | flag::wildcard | flag::partial);
+		res = parse_result{};
+		parser(text, plain, res).run();
+	}
 	return res;
 }
 

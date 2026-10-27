@@ -37,16 +37,25 @@ r.tree.describe();                // Query(((Zbarack@1 AND (Zmichell@2 OR Zobama
 | `a NEAR b`, `a ADJ b`, `NEAR/n`, `ADJ/n` | `boolean` | window n + terms - 1, default n 10 |
 | `"a b"`, `a-b`, `a:b`, `a/b` | `phrase` | `PHRASE` over the words |
 | `+a`, `-a` | `lovehate` | required and excluded items: `(R AND_MAYBE O) AND_NOT X` |
+| `word*` | `wildcard` | `WILDCARD SYNONYM word`, no position |
+| the last word, at the end of the text | `partial` | `(WILDCARD SYNONYM word OR word@n)`, for words of two or more characters |
+| `word~`, `word~n` at the end | `fuzzy` | `EDIT_DISTANCE SYNONYM word~2` (or `~n`) |
+| runs of CJK, Thai, ... | `cjk_ngram` | unigrams and bigrams, ANDed at one position, never stemmed |
+| `NOT a`, a lone `-a` | `pure_not` | `(0 * <alldocuments> AND_NOT a)` |
+| `a and b` | `boolean_any_case` | `and`, `or`, `not`, `xor` in any case are operators |
+
+When NEAR or ADJ meets a word that `wildcard` or `partial` would expand, the whole text is
+read again as plain words (no `boolean`, `wildcard` or `partial`).
 
 `config::resolver` maps a field name before `:` to a term prefix (`title:obama` becomes
 `Sobama`); without it `title:obama` is the phrase `title obama`.
 
 ## Status
 
-Step 1 of the plan in strata `docs/design/queryparser.md`: the three flags above, stemming
-strategies, errors, and the 176 oracle rows of the `default` and `boolean|phrase|lovehate`
-flag sets. Wildcards, partial and fuzzy terms, CJK n-grams, stop words and the extensions
-(escaping, boosts, slop, lenient errors) come next.
+Steps 1 and 2 of the plan in strata `docs/design/queryparser.md`: every flag above, the
+stemming strategies, errors, and all 528 oracle rows of `parse.jsonl`. Stop words, default
+prefixes, glob wildcards (`?`), the other default operators and expansion limits come with
+step 3 (Xapiand's configurations); the extensions (escaping, boosts, slop, lenient errors) after.
 
 ## Tests
 

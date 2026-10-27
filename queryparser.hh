@@ -44,6 +44,12 @@ namespace flag {
 inline constexpr std::uint32_t boolean = 1u << 0;   // AND OR NOT XOR NEAR ADJ and brackets
 inline constexpr std::uint32_t phrase = 1u << 1;    // "quoted phrases" and phrase generators (a-b)
 inline constexpr std::uint32_t lovehate = 1u << 2;  // +required and -excluded
+inline constexpr std::uint32_t wildcard = 1u << 3;  // `word*` matches every term with that prefix
+inline constexpr std::uint32_t partial = 1u << 4;   // the last word, at the end of the text, also matches as a prefix
+inline constexpr std::uint32_t fuzzy = 1u << 5;     // `word~` and `word~n` match terms within an edit distance
+inline constexpr std::uint32_t cjk_ngram = 1u << 6;  // CJK, Thai and similar runs become unigram and bigram terms
+inline constexpr std::uint32_t pure_not = 1u << 7;   // `NOT a` and a lone `-a` match everything except a
+inline constexpr std::uint32_t boolean_any_case = 1u << 8;  // and, or, not, xor in any case are operators
 }  // namespace flag
 
 inline constexpr std::uint32_t default_flags = flag::boolean | flag::phrase | flag::lovehate;
@@ -60,6 +66,10 @@ enum class kind : std::uint8_t {
 	synonym,
 	elite_set,
 	max,
+	wildcard,       // text: pattern, matches terms starting with it
+	edit_distance,  // text: pattern, window: the edit distance
+	match_all,
+	scale,  // factor * its only child
 };
 
 using node_id = std::uint32_t;
@@ -70,7 +80,9 @@ struct node {
 	kind k = kind::term;
 	std::uint32_t pos = 0;     // term: position
 	std::uint32_t wqf = 1;     // term: query frequency
-	std::uint32_t window = 0;  // near, phrase: window in positions
+	std::uint32_t window = 0;  // near, phrase: window in positions; edit_distance: distance
+	double factor = 1;         // scale
+	bool solid = false;        // an op that never merges into a parent of the same kind
 	std::uint32_t text_off = 0;
 	std::uint32_t text_len = 0;
 	node_id first = no_node;
