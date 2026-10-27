@@ -172,7 +172,7 @@ int main() {
 	{
 		config c = plain();
 		c.stem = analysis::stem_strategy::some;
-		CHECK_EQ(run("Running runs 7up", c), "Query((running@1 OR Zrun@2 OR 7up@3))");
+		CHECK_EQ(run("Running runs 7up", c), "Query((Zrun@1 OR Zrun@2 OR 7up@3))");
 		CHECK_EQ(run("\"runs runs\" runs-runs", c), "Query(((runs@1 PHRASE 2 runs@2) OR (runs@3 PHRASE 2 runs@4)))");
 		c.stem = analysis::stem_strategy::all_z;
 		CHECK_EQ(run("Runs", c), "Query(Zrun@1)");
@@ -201,7 +201,7 @@ int main() {
 		// Under `some` a stemmed term is `Z`, then the field prefix (V2: ZSbarack).
 		c.stem = analysis::stem_strategy::some;
 		CHECK_EQ(run("title:running", c), "Query(ZSrun@1)");
-		CHECK_EQ(run("title:Running", c), "Query(Srunning@1)");
+		CHECK_EQ(run("title:Running", c), "Query(ZSrun@1)");
 		c.stem = analysis::stem_strategy::all_z;
 		CHECK_EQ(run("title:\"runs ran\"", c), "Query((ZSrun@1 PHRASE 2 ZSran@2))");
 	}
@@ -421,6 +421,44 @@ int main() {
 		const auto& root = r.tree.at(r.tree.root());
 		CHECK_EQ(std::to_string(int(root.k)), std::to_string(int(kind::or_)));
 		CHECK_EQ(std::string(r.tree.text(r.tree.at(root.first))), "a");
+	}
+	// Xapian 2.0 (what Xapiand ships), where the 2.1 oracle differs: capitalized words are stemmed,
+	// a trailing `+` or `#` stays in the word, and NEAR beside an expanding word is a plain word
+	// when BOOLEAN is off.
+	{
+		config c = plain();
+		c.stem = analysis::stem_strategy::some;
+		CHECK_EQ(run("Barack Running", c), "Query((Zbarack@1 OR Zrun@2))");
+		c.flags = flag::phrase | flag::lovehate;
+		CHECK_EQ(run("a OR b", c), "Query((Za@1 OR Zor@2 OR Zb@3))");
+		c.flags = flag::boolean;
+		CHECK_EQ(run("ab+ ab# c++ C#", c), "Query((Zab+@1 OR Zab#@2 OR Zc++@3 OR Zc#@4))");
+		analysis::stopper stop;
+		for (const char* w : {"a", "b", "c", "near"}) { stop.add(w); }
+		c.flags = flag::phrase | flag::lovehate | flag::wildcard | flag::fuzzy;
+		c.stem = analysis::stem_strategy::none;
+		c.stopper = &stop;
+		CHECK_EQ(run("(a b) NEAR c*", c), "Query((a@1 OR b@2 OR WILDCARD SYNONYM c))");
+		CHECK_EQ(run("a b c*", c), "Query(WILDCARD SYNONYM c)");
+		CHECK_EQ(run("a NEAR 1990s-era*", c), "Query((a@1 OR near@2 OR 1990s@3 OR WILDCARD SYNONYM era))");
+		CHECK_EQ(run("the.cat*", c), "Query((the@1 OR WILDCARD SYNONYM cat))");
+		CHECK_EQ(run("a~ NEAR b", c), "Query((EDIT_DISTANCE SYNONYM a~2 OR (near@2 OR b@3)))");
+		// An exclusion that stays is expanded; one that reads as unmarked stands as its plain term.
+		CHECK_EQ(run("a NEAR -b*", c), "Query(((a@1 OR near@2) AND_NOT WILDCARD SYNONYM b))");
+		CHECK_EQ(run("-ba*", c), "Query(ba@1)");
+		// A default NEAR or PHRASE joined around an exclusion has a window of its terms.
+		config n = plain();
+		n.flags = flag::phrase | flag::lovehate;
+		n.default_op = kind::near;
+		CHECK_EQ(run("a b c", n), "Query((a@1 NEAR 12 b@2 NEAR 12 c@3))");
+		CHECK_EQ(run("a -b c", n), "Query(((a@1 NEAR 2 c@3) AND_NOT b@2))");
+		n.default_op = kind::phrase;
+		CHECK_EQ(run("+a b -c d", n), "Query(((a@1 AND_MAYBE (b@2 PHRASE 2 d@4)) AND_NOT c@3))");
+		CHECK_EQ(run("ab,cd", n), "Query((ab@1 PHRASE 11 cd@2))");
+		// Kept on purpose: a lone `-a` under BOOLEAN with no stop list is a syntax error (2.0 reads it as `a`).
+		config b = plain();
+		b.flags = flag::boolean | flag::lovehate;
+		CHECK_EQ(run("-a", b), "ERROR Syntax: <expression> NOT <expression>");
 	}
 	std::printf("queryparser: %s\n", failures ? "FAILED" : "ok");
 	return failures ? EXIT_FAILURE : EXIT_SUCCESS;

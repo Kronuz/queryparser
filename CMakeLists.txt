@@ -41,6 +41,9 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   add_test(NAME t3 COMMAND queryparser_t2 "${CMAKE_CURRENT_SOURCE_DIR}/test/vectors/parse-v3.jsonl"
                            "${CMAKE_CURRENT_SOURCE_DIR}/test/vectors/stopwords" "${CMAKE_CURRENT_SOURCE_DIR}/test/vectors/EXCEPTIONS-v3.md")
 
+  add_test(NAME t5 COMMAND queryparser_t2 "${CMAKE_CURRENT_SOURCE_DIR}/test/vectors/parse-ab.jsonl"
+                           "${CMAKE_CURRENT_SOURCE_DIR}/test/vectors/stopwords" "${CMAKE_CURRENT_SOURCE_DIR}/test/vectors/EXCEPTIONS-ab.md")
+
   add_executable(queryparser_deep test/deep.cc)
   find_package(Threads REQUIRED)
   target_link_libraries(queryparser_deep PRIVATE queryparser Threads::Threads)

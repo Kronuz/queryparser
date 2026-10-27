@@ -254,6 +254,7 @@ struct item {
 	bool quote = false;   // a quoted phrase
 	bool group = false;   // a bracket
 	node_id alt = no_node;  // a partial pair: its term alone, which an exclusion that reads as unmarked uses
+	bool glued = false;     // a word joined by a generator to the wildcard or edit distance after it: a run of its own
 };
 
 struct pending_op {
@@ -554,15 +555,7 @@ private:
 		const char32_t c0 = unicode::next_utf8(q, end);
 		w.capital = unicode::category_of(c0) == unicode::category::uppercase_letter || unicode::category_of(c0) == unicode::category::titlecase_letter;
 		const char* r = scanner_.scan(p, end);
-		const bool call = r < end && *r == '(';
 		w.text = scanner_.text();
-		// A `+` or `#` suffix belongs to a one-character word only (`c++`, `c#`).
-		std::size_t base = w.text.size();
-		while (base > 0 && (w.text[base - 1] == '+' || w.text[base - 1] == '#')) { --base; }
-		if (!call && base < w.text.size() && base > 0 && code_points(w.text.substr(0, base)) != 1 && r - p >= std::ptrdiff_t(w.text.size() - base)) {
-			r -= w.text.size() - base;
-			w.text.resize(base);
-		}
 		return r;
 	}
 
@@ -651,13 +644,20 @@ private:
 	const char* joins(const char* g, mark m) const {
 		const char* w = g;
 		while (w < e_ && is_generator(*w)) { ++w; }
-		if (!phrase() || w == g || !word_at(w)) { return nullptr; }
+		if (!phrase() || w == g || !word_at(w) || glued_anchor(g, m)) { return nullptr; }
+		return w;
+	}
+
+	// Does a generator at g join the word before it to a wildcard or an edit distance?
+	bool glued_anchor(const char* g, mark m) const {
+		const char* w = g;
+		while (w < e_ && is_generator(*w)) { ++w; }
+		if (!phrase() || w == g || !word_at(w) || m == mark::minus) { return false; }
 		raw_word probe;
 		const char* u = const_cast<parser*>(this)->take_word(w, e_, probe);
 		std::uint32_t d;
 		const char* x;
-		if (m != mark::minus && ((has(flag::wildcard) && u < e_ && *u == '*') || glob_follows(w) || fuzzy_at(u, d, x))) { return nullptr; }
-		return w;
+		return (has(flag::wildcard) && u < e_ && *u == '*') || glob_follows(w) || fuzzy_at(u, d, x);
 	}
 
 	// A word, with the words that phrase generators join to it ("a-b", "title:x").
@@ -801,21 +801,30 @@ private:
 	// A lone word: a term, or a wildcard, edit-distance or partial query. Returns where
 	// the item ends.
 	const char* single(const raw_word& w, const std::string& prefix, const char* r, const char* start) {
-		const bool expand = pending_ != mark::minus;
-		if (expand && has(flag::wildcard) && r < e_ && *r == '*') {
+		// An excluded word expands too; if the exclusion reads as unmarked, the plain term stands.
+		const bool minus = pending_ == mark::minus;
+		if (has(flag::wildcard) && r < e_ && *r == '*') {
 			anchor_ = true;
-			++termpos_;
-			operand(bld_.leaf(kind::wildcard, prefix + w.text, 0, cfg_.wildcard_expansion), off(start), r + 1, false);
+			if (minus) {
+				alt_ = make_term(w, prefix, false);
+			} else {
+				++termpos_;
+			}
+			operand(bld_.leaf(kind::wildcard, prefix + w.text, 0, cfg_.wildcard_expansion), off(start), r + 1, false, minus && stopword(w));
 			return r + 1;
 		}
 		std::uint32_t dist;
 		const char* fend;
-		if (expand && fuzzy_at(r, dist, fend)) {
+		if (fuzzy_at(r, dist, fend)) {
 			const node_id n = bld_.leaf(kind::edit_distance, prefix + w.text, dist, cfg_.fuzzy_expansion);
 			bld_.set_pos(n, std::uint32_t(prefix.size()));
 			anchor_ = true;
-			++termpos_;
-			operand(n, off(start), fend, false);
+			if (minus) {
+				alt_ = make_term(w, prefix, false);
+			} else {
+				++termpos_;
+			}
+			operand(n, off(start), fend, false, minus && stopword(w));
 			return fend;
 		}
 		if (has(flag::partial) && !(call_ && ket_) && r == e_ && code_points(w.text) >= 2 && !(boolean() && (keyword(start, "NEAR") || keyword(start, "ADJ")))) {
@@ -839,6 +848,7 @@ private:
 		const bool stop = cfg_.stopper && !stop_all() && is_stop(w);
 		solo_ = solo;
 		kw_ = w.capital && (w.text == "and" || w.text == "or" || w.text == "not" || w.text == "xor" || w.text == "near" || w.text == "adj");
+		glued_ = glued_anchor(r, pending_);
 		operand(finish(one, prefix, kind::term, false, 0), off(start), r, !solo, stop);
 		return r;
 	}
@@ -916,6 +926,7 @@ private:
 
 	bool stop_all() const { return cfg_.stopper && cfg_.stop == analysis::stop_strategy::all; }
 	bool is_stop(const raw_word& w) const { return cfg_.stopper && (*cfg_.stopper)(w.text); }
+	bool stopword(const raw_word& w) const { return cfg_.stopper && !stop_all() && is_stop(w); }
 
 	// Terms for words: a single term, or a phrase or proximity operator over them. Returns
 	// no_node when every word was dropped. A proximity window is distance + terms - 1.
@@ -957,7 +968,7 @@ private:
 			if (s == stem_strategy::all || s == stem_strategy::all_z) {
 				body = stem(w.text);
 				z = s == stem_strategy::all_z;
-			} else if (s == stem_strategy::some && !in_phrase && !w.capital && !w.star) {
+			} else if (s == stem_strategy::some && !in_phrase && !w.star) {
 				const char* q = w.text.data();
 				if (unicode::is_letter(unicode::next_utf8(q, q + w.text.size()))) {
 					body = stem(w.text);
@@ -975,8 +986,9 @@ private:
 	// removed still stands in as an operand.
 	void operand(node_id n, std::size_t offset, const char* end, bool plain, bool stop = false) {
 		const mark m = std::exchange(pending_, mark::none);
+		const bool glued = std::exchange(glued_, false);
 		if (n == no_node && !std::exchange(stopped_, false)) { return; }
-		push_item({n, m, offset, std::size_t(end - b_), plain, stop, anchor_, solo_, kw_, quote_, false, std::exchange(alt_, no_node)});
+		push_item({n, m, offset, std::size_t(end - b_), plain, stop, anchor_, solo_, kw_, quote_, false, std::exchange(alt_, no_node), glued});
 		anchor_ = solo_ = kw_ = quote_ = false;
 	}
 
@@ -1060,17 +1072,18 @@ private:
 
 	// l OP r: same-kind chains of AND, OR and XOR extend the left operand only. A dropped operand
 	// removes its operator, and a dropped left operand removes AND_NOT with it.
-	node_id join(kind k, node_id l, node_id r) {
+	node_id join(kind k, node_id l, node_id r, bool excluding = false) {
 		if (l == no_node) { return k == kind::and_not ? no_node : r; }
 		if (r == no_node) { return l; }
 		switch (k) {
-			case kind::near: case kind::phrase: case kind::elite_set: case kind::synonym: case kind::max: return nary(k, {l, r});
+			case kind::near: case kind::phrase: case kind::elite_set: case kind::synonym: case kind::max: return nary(k, {l, r}, excluding);
 			default: return bld_.combine(k, l, r);
 		}
 	}
 
 	// A NEAR, PHRASE or other n-ary node over kids.
-	node_id nary(kind k, const std::vector<node_id>& kids) {
+	// A pair joined in a group that holds an exclusion has a window of its terms.
+	node_id nary(kind k, const std::vector<node_id>& kids, bool pair = false) {
 		if (kids.size() == 1) { return kids[0]; }
 		std::uint32_t window = 0;
 		if (k == kind::near || k == kind::phrase) {
@@ -1080,7 +1093,7 @@ private:
 					return no_node;
 				}
 			}
-			window = std::uint32_t(10 + kids.size() - 1);
+			window = std::uint32_t(pair ? kids.size() : 10 + kids.size() - 1);
 		} else if (k == kind::elite_set) {
 			window = 10;
 		}
@@ -1090,10 +1103,10 @@ private:
 	}
 
 	// Joins the elements of a group pairwise with the default operator.
-	node_id join_default(const std::vector<node_id>& kids) {
+	node_id join_default(const std::vector<node_id>& kids, bool excluding = false) {
 		if (kids.empty()) { return no_node; }
 		node_id acc = kids[0];
-		for (std::size_t i = 1; i < kids.size(); ++i) { acc = join(default_op_, acc, kids[i]); }
+		for (std::size_t i = 1; i < kids.size(); ++i) { acc = join(default_op_, acc, kids[i], excluding); }
 		return acc;
 	}
 
@@ -1171,19 +1184,21 @@ private:
 		}
 		// Stop words go from a run, unless the run is only stop words and has two or more.
 		std::vector<std::size_t> run_end(end - first, 0);
-		bool anchored = false;
-		for (std::size_t x = first; x < end; ++x) { anchored |= items_[x].anchor; }
 		for (std::size_t i = first; i < end;) {
 			std::size_t j = i + 1;
 			if ((items_[i].plain || items_[i].solo) && items_[i].m == mark::none) {
 				// A run extends over plain words and ends with a word that stands alone.
-				while (!items_[i].solo && j < end && (items_[j].plain || items_[j].solo) && items_[j].m == mark::none &&
+				while (!items_[i].solo && !items_[i].glued && j < end && (items_[j].plain || items_[j].solo) && !items_[j].glued && items_[j].m == mark::none &&
 				       gap_is_space(items_[j - 1], items_[j].offset)) {
 					++j;
 					if (items_[j - 1].solo) { break; }
 				}
-				bool nonstop = false;
-				for (std::size_t x = i; x < j; ++x) { nonstop |= !items_[x].stop; }
+				bool nonstop = false, anchored = false;
+				for (std::size_t x = i; x < j; ++x) {
+					nonstop |= !items_[x].stop;
+					anchored |= items_[x].anchor;
+				}
+				anchored |= j < end && items_[j].anchor && items_[j].m == mark::none && gap_is_space(items_[j - 1], items_[j].offset);
 				if (nonstop || j - i < 2 || anchored) {
 					for (std::size_t x = i; x < j; ++x) {
 						if (items_[x].stop) { items_[x].n = no_node; }
@@ -1227,7 +1242,7 @@ private:
 			i = j;
 		}
 		node_id res = fold(req, kind::and_);
-		const node_id o = opt.empty() ? no_node : join_default(opt);
+		const node_id o = opt.empty() ? no_node : join_default(opt, !exc.empty());
 		if (failed_) { return no_node; }
 		if (res == no_node) {
 			res = o;
@@ -1308,6 +1323,7 @@ private:
 	bool kw_ = false;
 	bool quote_ = false;
 	bool lone_stop_ = false;
+	bool glued_ = false;
 	node_id alt_ = no_node;
 	bool call_ = false;  // a word glued to `(` was read
 	bool ket_ = false;   // a `)` was read

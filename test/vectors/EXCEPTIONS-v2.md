@@ -5,11 +5,342 @@ One line per V2 row the parser does not match: `- ROW | KIND | query: reason`, R
 Kinds:
 
 - `unreachable`: FLAG_WORD_BREAKS needs ICU, which the oracle build lacked (6 rows); the runner excepts them by itself.
-- `xapian-2.1`: Xapian 2.1 differs from the 2.0 reference (Q5). None found.
+- `2.1 versus 2.0`: the oracle is Xapian 2.1 and Xapiand ships 2.0; the parser follows 2.0 (Q5), so the rows where 2.1 differs are listed. Two causes: a capitalized word is stemmed under `some` in 2.0 and left as written in 2.1; a trailing `+` or `#` stays in the word in 2.0 and goes in 2.1 for words of two or more characters.
 - `stemmer`: V2 used Xapian::Stem and the library uses snowball. None found.
 - `open`: a row that fails and is tracked. It counts as failed, is listed on every run, and does not fail the run;
   a new failure, or an open row that now matches, does. The shapes are described in docs/status/queryparser.md.
 
-- ROW | KIND | query: reason`, ROW the 1-based line of parse-v2.jsonl.
-Kinds: `xapian-2.1` (2.1 differs from the 2.0 reference, Q5), `stemmer` (V2 used Xapian::Stem, the library uses snowball), `unreachable` (word breaks without ICU; excepted by the runner).
-
+- 30 | 2.1 versus 2.0 | barack XOR obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 33 | 2.1 versus 2.0 | barack ADJ obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 41 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 85 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 129 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 195 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 371 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 372 | 2.1 versus 2.0 | a b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 376 | 2.1 versus 2.0 | a ADJ b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 377 | 2.1 versus 2.0 | a b ADJ c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 393 | 2.1 versus 2.0 | a b AND c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 394 | 2.1 versus 2.0 | a AND b AND c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 395 | 2.1 versus 2.0 | a XOR b AND c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 396 | 2.1 versus 2.0 | (a OR b) OR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 397 | 2.1 versus 2.0 | a NOT b NOT c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 398 | 2.1 versus 2.0 | a NOT b OR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 400 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 401 | 2.1 versus 2.0 | a ADJ b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 408 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 467 | 2.1 versus 2.0 | -a OR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 503 | 2.1 versus 2.0 | a AND -b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 569 | 2.1 versus 2.0 | a NEAR b ADJ c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 570 | 2.1 versus 2.0 | a ADJ b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 573 | 2.1 versus 2.0 | a-b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 574 | 2.1 versus 2.0 | a NEAR b-c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 576 | 2.1 versus 2.0 | a-b ADJ c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 577 | 2.1 versus 2.0 | "a b" NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 578 | 2.1 versus 2.0 | a NEAR "b c": a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 579 | 2.1 versus 2.0 | (a b) NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 580 | 2.1 versus 2.0 | a NEAR (b c): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 582 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 584 | 2.1 versus 2.0 | -a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 585 | 2.1 versus 2.0 | a NEAR -b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 586 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 587 | 2.1 versus 2.0 | a b NEAR c d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 588 | 2.1 versus 2.0 | a NEAR NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 589 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 590 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 591 | 2.1 versus 2.0 | NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 593 | 2.1 versus 2.0 | a Near b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 596 | 2.1 versus 2.0 | a NEAR/3 NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 610 | 2.1 versus 2.0 | a OR b NEAR/3 c ADJ d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 611 | 2.1 versus 2.0 | title:a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 612 | 2.1 versus 2.0 | a NEAR title:b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 613 | 2.1 versus 2.0 | a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 615 | 2.1 versus 2.0 | a NEAR b~: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 616 | 2.1 versus 2.0 | a~ NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 617 | 2.1 versus 2.0 | a NEAR 1990s-era: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 618 | 2.1 versus 2.0 | a NEAR b.c.d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 622 | 2.1 versus 2.0 | a NEAR/3 (b c) NEAR d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 626 | 2.1 versus 2.0 | a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 629 | 2.1 versus 2.0 | a NEAR b NEAR c NEAR d NEAR e: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 632 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 633 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 634 | 2.1 versus 2.0 | Barack NEAR Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 636 | 2.1 versus 2.0 | title:a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 637 | 2.1 versus 2.0 | a NEAR b.c.d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 641 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 643 | 2.1 versus 2.0 | title:a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 672 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 675 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 676 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 677 | 2.1 versus 2.0 | a ADJ b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 679 | 2.1 versus 2.0 | a NEAR b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 680 | 2.1 versus 2.0 | a ADJ b ADJ c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 681 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 684 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 913 | 2.1 versus 2.0 | Ab_Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 919 | 2.1 versus 2.0 | Ab,Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 925 | 2.1 versus 2.0 | Ab;Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 931 | 2.1 versus 2.0 | Ab'Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 937 | 2.1 versus 2.0 | Ab&Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 943 | 2.1 versus 2.0 | Ab+Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 944 | 2.1 versus 2.0 | ab+: a trailing `+` or `#` stays in the word (2.0), the 2.1 oracle drops it from a word of two or more characters
+- 949 | 2.1 versus 2.0 | Ab#Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 950 | 2.1 versus 2.0 | ab#: a trailing `+` or `#` stays in the word (2.0), the 2.1 oracle drops it from a word of two or more characters
+- 955 | 2.1 versus 2.0 | Ab’Cd: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1008 | 2.1 versus 2.0 | Running_Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1009 | 2.1 versus 2.0 | Running,Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1010 | 2.1 versus 2.0 | Running;Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1011 | 2.1 versus 2.0 | Running'Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1012 | 2.1 versus 2.0 | Running&Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1013 | 2.1 versus 2.0 | Running+Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1014 | 2.1 versus 2.0 | Running#Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1015 | 2.1 versus 2.0 | Running’Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1053 | 2.1 versus 2.0 | a OR b): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1054 | 2.1 versus 2.0 | a OR b) c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1056 | 2.1 versus 2.0 | (a OR b)) AND c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1066 | 2.1 versus 2.0 | (NEAR a): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1067 | 2.1 versus 2.0 | (a NEAR): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1069 | 2.1 versus 2.0 | a NEAR b): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1101 | 2.1 versus 2.0 | (a OR (b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1104 | 2.1 versus 2.0 | (a OR b)) AND c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1105 | 2.1 versus 2.0 | (OR a): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1113 | 2.1 versus 2.0 | (a OR b)) AND c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1179 | 2.1 versus 2.0 | (a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1192 | 2.1 versus 2.0 | NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1193 | 2.1 versus 2.0 | ADJ: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1198 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1199 | 2.1 versus 2.0 | a ADJ: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1204 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1205 | 2.1 versus 2.0 | ADJ a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1240 | 2.1 versus 2.0 | a NEAR (): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1254 | 2.1 versus 2.0 | And: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1255 | 2.1 versus 2.0 | Or: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1256 | 2.1 versus 2.0 | a And b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1259 | 2.1 versus 2.0 | a NEAR/3 AND b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1269 | 2.1 versus 2.0 | ANDa: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1271 | 2.1 versus 2.0 | a ANDb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1272 | 2.1 versus 2.0 | a ANDROID: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1273 | 2.1 versus 2.0 | NOTa: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1274 | 2.1 versus 2.0 | a NOTb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1275 | 2.1 versus 2.0 | ORb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1276 | 2.1 versus 2.0 | a ORb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1288 | 2.1 versus 2.0 | AND: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1289 | 2.1 versus 2.0 | a NOT: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1290 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1291 | 2.1 versus 2.0 | a OR NOT b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1292 | 2.1 versus 2.0 | a NOT NOT: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1293 | 2.1 versus 2.0 | NOT AND: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1294 | 2.1 versus 2.0 | () AND a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1296 | 2.1 versus 2.0 | And: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1297 | 2.1 versus 2.0 | a	AND	b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1298 | 2.1 versus 2.0 | a ANDb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1299 | 2.1 versus 2.0 | a AND:b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1301 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1304 | 2.1 versus 2.0 | And: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1305 | 2.1 versus 2.0 | a ANDb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1333 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1335 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1355 | 2.1 versus 2.0 | a ANDb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1356 | 2.1 versus 2.0 | a NOTb: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1365 | 2.1 versus 2.0 | NEAR a*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1395 | 2.1 versus 2.0 | NEAR a*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1425 | 2.1 versus 2.0 | NEAR a*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1451 | 2.1 versus 2.0 | ADJ: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1452 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1467 | 2.1 versus 2.0 | NOTa: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1500 | 2.1 versus 2.0 | a NEAR b ADJ c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1501 | 2.1 versus 2.0 | a ADJ b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1504 | 2.1 versus 2.0 | a-b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1505 | 2.1 versus 2.0 | a NEAR b-c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1507 | 2.1 versus 2.0 | a-b ADJ c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1508 | 2.1 versus 2.0 | "a b" NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1509 | 2.1 versus 2.0 | a NEAR "b c": a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1510 | 2.1 versus 2.0 | (a b) NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1511 | 2.1 versus 2.0 | a NEAR (b c): a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1513 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1515 | 2.1 versus 2.0 | -a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1516 | 2.1 versus 2.0 | a NEAR -b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1517 | 2.1 versus 2.0 | a NEAR b c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1518 | 2.1 versus 2.0 | a b NEAR c d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1519 | 2.1 versus 2.0 | a NEAR NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1520 | 2.1 versus 2.0 | NEAR a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1521 | 2.1 versus 2.0 | a NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1522 | 2.1 versus 2.0 | NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1524 | 2.1 versus 2.0 | a Near b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1527 | 2.1 versus 2.0 | a NEAR/3 NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1528 | 2.1 versus 2.0 | Barack NEAR Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1533 | 2.1 versus 2.0 | the NEAR the: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1541 | 2.1 versus 2.0 | a OR b NEAR/3 c ADJ d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1542 | 2.1 versus 2.0 | title:a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1543 | 2.1 versus 2.0 | a NEAR title:b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1546 | 2.1 versus 2.0 | a NEAR b~: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1547 | 2.1 versus 2.0 | a~ NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1548 | 2.1 versus 2.0 | a NEAR 1990s-era: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1549 | 2.1 versus 2.0 | a NEAR b.c.d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1553 | 2.1 versus 2.0 | a NEAR/3 (b c) NEAR d: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1557 | 2.1 versus 2.0 | a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1558 | 2.1 versus 2.0 | a ADJ b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1567 | 2.1 versus 2.0 | a NEAR b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1568 | 2.1 versus 2.0 | a NEAR b NEAR c NEAR d NEAR e*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1569 | 2.1 versus 2.0 | a ADJ b ADJ c ADJ d*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1571 | 2.1 versus 2.0 | a NEAR/3 b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1573 | 2.1 versus 2.0 | a NEAR b ADJ c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1575 | 2.1 versus 2.0 | a-b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1577 | 2.1 versus 2.0 | "a b" NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1578 | 2.1 versus 2.0 | (a b) NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1580 | 2.1 versus 2.0 | +a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1581 | 2.1 versus 2.0 | a NEAR -b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1582 | 2.1 versus 2.0 | a b NEAR c d*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1583 | 2.1 versus 2.0 | NEAR a*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1587 | 2.1 versus 2.0 | Barack NEAR Obama*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1590 | 2.1 versus 2.0 | the NEAR the*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1593 | 2.1 versus 2.0 | a NOT b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1594 | 2.1 versus 2.0 | a OR b NEAR/3 c ADJ d*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1596 | 2.1 versus 2.0 | a* NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1597 | 2.1 versus 2.0 | a~ NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1598 | 2.1 versus 2.0 | a NEAR b.c.d*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1600 | 2.1 versus 2.0 | a NEAR/3 (b c) NEAR d*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1602 | 2.1 versus 2.0 | a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1607 | 2.1 versus 2.0 | a NEAR b NEAR c NEAR d NEAR e*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1608 | 2.1 versus 2.0 | a NEAR b NEAR/3 c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1609 | 2.1 versus 2.0 | a NEAR b ADJ c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1610 | 2.1 versus 2.0 | a-b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1611 | 2.1 versus 2.0 | a NEAR "b c": a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1612 | 2.1 versus 2.0 | a NEAR +b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1618 | 2.1 versus 2.0 | a NOT b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1621 | 2.1 versus 2.0 | a XOR b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1622 | 2.1 versus 2.0 | a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1627 | 2.1 versus 2.0 | a NEAR b NEAR c NEAR d NEAR e*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1628 | 2.1 versus 2.0 | a NEAR b NEAR/3 c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1629 | 2.1 versus 2.0 | a NEAR b ADJ c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1630 | 2.1 versus 2.0 | a-b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1631 | 2.1 versus 2.0 | a NEAR "b c": a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1632 | 2.1 versus 2.0 | a NEAR +b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1638 | 2.1 versus 2.0 | a NOT b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1641 | 2.1 versus 2.0 | a XOR b NEAR c*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1646 | 2.1 versus 2.0 | a-b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1647 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1648 | 2.1 versus 2.0 | NEAR: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1651 | 2.1 versus 2.0 | a NEAR 1990s-era: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1652 | 2.1 versus 2.0 | a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1655 | 2.1 versus 2.0 | a NEAR b NEAR/3 c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1656 | 2.1 versus 2.0 | a-b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1657 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1660 | 2.1 versus 2.0 | a NOT b NEAR c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1661 | 2.1 versus 2.0 | a NEAR 1990s-era: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1714 | 2.1 versus 2.0 | -a OR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1728 | 2.1 versus 2.0 | a OR b) c: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1752 | 2.1 versus 2.0 | a NEAR +b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1753 | 2.1 versus 2.0 | a Near b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1755 | 2.1 versus 2.0 | a NEAR b~: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1757 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1758 | 2.1 versus 2.0 | RUNNING: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1761 | 2.1 versus 2.0 | Running runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1762 | 2.1 versus 2.0 | running Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1779 | 2.1 versus 2.0 | Running AND runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1782 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1783 | 2.1 versus 2.0 | Barack Obamas: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1785 | 2.1 versus 2.0 | OBAMA'S: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1786 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1788 | 2.1 versus 2.0 | Obama running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1789 | 2.1 versus 2.0 | obama Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1790 | 2.1 versus 2.0 | running Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1796 | 2.1 versus 2.0 | Runs: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1798 | 2.1 versus 2.0 | RUNS ran: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1799 | 2.1 versus 2.0 | Éric running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1802 | 2.1 versus 2.0 | Café: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1812 | 2.1 versus 2.0 | Running. runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1813 | 2.1 versus 2.0 | running, Runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1814 | 2.1 versus 2.0 | dogs. Cats: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1820 | 2.1 versus 2.0 | McDonald's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1821 | 2.1 versus 2.0 | Mc Donald's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1825 | 2.1 versus 2.0 | Hello World: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1827 | 2.1 versus 2.0 | hello World: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1836 | 2.1 versus 2.0 | Foo_Bar: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1838 | 2.1 versus 2.0 | Running runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1843 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1845 | 2.1 versus 2.0 | Runs: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1850 | 2.1 versus 2.0 | Mc Donald's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1856 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1857 | 2.1 versus 2.0 | Runs: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1927 | 2.1 versus 2.0 | Obama running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1929 | 2.1 versus 2.0 | Runs: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1933 | 2.1 versus 2.0 | Running. runners: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1935 | 2.1 versus 2.0 | McDonald's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 1966 | 2.1 versus 2.0 | THE: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2013 | 2.1 versus 2.0 | A.B.C the: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2014 | 2.1 versus 2.0 | the A.B.C: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2042 | 2.1 versus 2.0 | a NOT an: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2044 | 2.1 versus 2.0 | A.B.C the: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2188 | 2.1 versus 2.0 | an AND a: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2208 | 2.1 versus 2.0 | el AND gato: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2217 | 2.1 versus 2.0 | le AND chat: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2238 | 2.1 versus 2.0 | A.B.C: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2239 | 2.1 versus 2.0 | A.B.C.: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2241 | 2.1 versus 2.0 | U.S.A: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2242 | 2.1 versus 2.0 | U.S.A.: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2243 | 2.1 versus 2.0 | U.S.A. today: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2246 | 2.1 versus 2.0 | C++: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2279 | 2.1 versus 2.0 | AT&T: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2280 | 2.1 versus 2.0 | R&D: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2333 | 2.1 versus 2.0 | [a TO b]: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2334 | 2.1 versus 2.0 | {a TO b}: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2335 | 2.1 versus 2.0 | a:[b TO c]: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2447 | 2.1 versus 2.0 | İstanbul: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2450 | 2.1 versus 2.0 | Σίσυφος: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2465 | 2.1 versus 2.0 | 𝐀𝐁: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2474 | 2.1 versus 2.0 | AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2502 | 2.1 versus 2.0 | A.B.C: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2514 | 2.1 versus 2.0 | A.B.C: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2560 | 2.1 versus 2.0 | 𝐀𝐁: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2578 | 2.1 versus 2.0 | 𝐀𝐁: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2586 | 2.1 versus 2.0 | A.B.C: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2673 | 2.1 versus 2.0 | ba* ADJ bc*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2728 | 2.1 versus 2.0 | ba* ADJ bc*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2881 | 2.1 versus 2.0 | ba* ADJ bc*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2886 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2887 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2897 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2899 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2902 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2904 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2905 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2915 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2917 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2920 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2922 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2923 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2933 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2935 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2938 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2940 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2941 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2951 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2953 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2956 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2958 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2959 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2969 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2971 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2974 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2976 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2977 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2982 | 2.1 versus 2.0 | a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2986 | 2.1 versus 2.0 | a OR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2987 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2989 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2992 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2994 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 2995 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3000 | 2.1 versus 2.0 | a NEAR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3004 | 2.1 versus 2.0 | a OR b: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3005 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3007 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3010 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3018 | 2.1 versus 2.0 | a NEAR b*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3023 | 2.1 versus 2.0 | Barack Obama's*: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3030 | 2.1 versus 2.0 | Obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3031 | 2.1 versus 2.0 | Running: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3041 | 2.1 versus 2.0 | Barack Obama's: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3043 | 2.1 versus 2.0 | a B: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
+- 3046 | 2.1 versus 2.0 | Z: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
