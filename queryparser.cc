@@ -262,6 +262,7 @@ struct pending_op {
 	std::size_t offset;
 	const char* label;  // the operator as the user wrote it
 	bool split;         // an implicit operator between the parts a stray `)` separates
+	std::size_t end = 0;  // where the operator word ends
 };
 
 struct frame {
@@ -456,6 +457,8 @@ private:
 			vals_.push_back(bld_.match_all_scaled(0));
 			expect_ = false;
 		} else {
+			// An excluded item before an operator word reads the text as plain words.
+			if (items_.size() > top().items_base && items_.back().m == mark::minus) { return reparse(); }
 			const node_id g = close_group_items();
 			if (failed_) { return e_; }
 			vals_.push_back(g);
@@ -464,7 +467,7 @@ private:
 			reduce();
 			if (failed_) { return e_; }
 		}
-		ops_.push_back({k, off(p), label, false});
+		ops_.push_back({k, off(p), label, false, off(r)});
 		expect_ = true;
 		return r;
 	}
@@ -966,6 +969,13 @@ private:
 						fail_op(o.label, o.offset);
 						return;
 					}
+					// A sign apart from the operator makes the text plain words.
+					for (std::size_t i = o.end; i + 1 < it.offset; ++i) {
+						if (!is_space(b_[i])) {
+							reparse();
+							return;
+						}
+					}
 					o.k = kind::and_not;
 				}
 				it.m = mark::none;
@@ -1076,6 +1086,10 @@ private:
 	// The group's items become: required (+) items and, under AND, every loose element; the
 	// optional rest; the excluded (-) items. A run of adjacent plain words is one element.
 	node_id combine_items(std::size_t first) {
+		if (items_.size() - first == 1 && items_[first].m == mark::minus && items_[first].quote && (cfg_.stopper || !boolean())) {
+			reparse();
+			return no_node;
+		}
 		if (items_.size() - first == 1 && (items_[first].m == mark::none || ((cfg_.stopper || !boolean()) && items_[first].m == mark::minus))) {
 			return items_[first].m == mark::minus && items_[first].alt != no_node ? items_[first].alt : items_[first].n;
 		}
@@ -1097,6 +1111,12 @@ private:
 				item& x = items_[i];
 				if (x.m != mark::minus) { continue; }
 				x.m = mark::none;
+				// An excluded phrase that reads as unmarked is read as plain words.
+				if (x.quote) {
+					reparse();
+					return no_node;
+				}
+				if (x.group && x.stop) { x.n = no_node; }
 				if (x.alt != no_node) {
 					x.n = x.alt;
 					x.plain = true;
