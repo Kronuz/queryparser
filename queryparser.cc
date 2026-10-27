@@ -238,6 +238,7 @@ enum class mark : std::uint8_t { none, plus, minus };
 
 // Internal flag of a re-read: a double quote is punctuation.
 constexpr std::uint32_t plain_quotes = 1u << 31;
+constexpr std::uint32_t plain_brackets = 1u << 30;
 
 // A thing in a group of juxtaposed items. n == no_node is a dropped stop word, which still
 // counts as an operand.
@@ -253,6 +254,7 @@ struct item {
 	bool kw = false;      // an upper-case operator word
 	bool quote = false;   // a quoted phrase
 	bool group = false;   // a bracket
+	node_id alt = no_node;  // a partial pair: its term alone, which an exclusion that reads as unmarked uses
 };
 
 struct pending_op {
@@ -360,8 +362,9 @@ private:
 	const char* step(const char* p) {
 		const char c = *p;
 		if (c == '"' && phrase() && !has(plain_quotes)) { return quoted(p); }
-		if (c == '(') { return open_frame(p); }
-		if (c == ')') {
+		if (c == '(' && !has(plain_brackets) && (boolean() || pending_ != mark::none)) { return open_frame(p); }
+		if (c == ')' && !has(plain_brackets) && (boolean() || frames_.size() > 1)) {
+			ket_ = true;
 			if (frames_.size() > 1) {
 				close_frame(p + 1);
 			} else {
@@ -457,7 +460,6 @@ private:
 			if (failed_) { return e_; }
 			vals_.push_back(g);
 		}
-		saw_op_ = true;
 		while (ops_.size() > top().ops_base && prec(ops_.back().k) >= prec(k)) {
 			reduce();
 			if (failed_) { return e_; }
@@ -534,21 +536,7 @@ private:
 			fail_op(ops_.back().label, ops_.back().offset);
 			return;
 		}
-		if (saw_op_) {
-			reparse_ = true;
-			failed_ = true;
-			return;
-		}
-		if (expect_) { return; }
-		const node_id g = close_group_items();
-		if (failed_) { return; }
-		vals_.push_back(g);
-		while (ops_.size() > top().ops_base && prec(ops_.back().k) >= prec(kind::and_)) {
-			reduce();
-			if (failed_) { return; }
-		}
-		ops_.push_back({default_op_, 0, "", true});
-		expect_ = true;
+		reparse();
 	}
 
 	// Collects the word at p (a word character) and returns where it ends.
@@ -557,11 +545,12 @@ private:
 		const char32_t c0 = unicode::next_utf8(q, end);
 		w.capital = unicode::category_of(c0) == unicode::category::uppercase_letter || unicode::category_of(c0) == unicode::category::titlecase_letter;
 		const char* r = scanner_.scan(p, end);
+		const bool call = r < end && *r == '(';
 		w.text = scanner_.text();
 		// A `+` or `#` suffix belongs to a one-character word only (`c++`, `c#`).
 		std::size_t base = w.text.size();
 		while (base > 0 && (w.text[base - 1] == '+' || w.text[base - 1] == '#')) { --base; }
-		if (base < w.text.size() && base > 0 && code_points(w.text.substr(0, base)) != 1 && r - p >= std::ptrdiff_t(w.text.size() - base)) {
+		if (!call && base < w.text.size() && base > 0 && code_points(w.text.substr(0, base)) != 1 && r - p >= std::ptrdiff_t(w.text.size() - base)) {
 			r -= w.text.size() - base;
 			w.text.resize(base);
 		}
@@ -691,7 +680,8 @@ private:
 			words.push_back(std::move(nw));
 			generated = true;
 		}
-		if (r < e_ && std::string_view("*=<>[{/@\\\"").find(*r) != std::string_view::npos) { words.back().star = true; }
+		if (r < e_ && std::string_view("*=<>[{/@\\\"(").find(*r) != std::string_view::npos) { words.back().star = true; }
+		if (r < e_ && *r == '(') { call_ = true; }
 		// NEAR and ADJ chains: words only, with no other item beside the chain.
 		kind prox = kind::term;
 		std::uint32_t distance = 10;
@@ -819,15 +809,16 @@ private:
 			operand(n, off(start), fend, false);
 			return fend;
 		}
-		if (has(flag::partial) && r == e_ && code_points(w.text) >= 2 && !(boolean() && (keyword(start, "NEAR") || keyword(start, "ADJ")))) {
+		if (has(flag::partial) && !(call_ && ket_) && r == e_ && code_points(w.text) >= 2 && !(boolean() && (keyword(start, "NEAR") || keyword(start, "ADJ")))) {
 			const node_id wc = bld_.leaf(kind::wildcard, prefix + w.text, 0, cfg_.partial_expansion);
 			anchor_ = true;
-			if (cfg_.stopper && is_stop(w)) {
-				++termpos_;
-				operand(wc, off(start), r, false);
+			const bool stopped = cfg_.stopper && is_stop(w);
+			const node_id t = make_term(w, prefix, false);
+			alt_ = t;
+			if (stopped) {
+				operand(wc, off(start), r, false, true);
 				return r;
 			}
-			const node_id t = make_term(w, prefix, false);
 			const node_id pair = bld_.op(kind::or_, 0, true);
 			bld_.add(pair, wc);
 			bld_.add(pair, t);
@@ -878,6 +869,8 @@ private:
 			q += 2;
 			while (q < e_ && *q != '"') { ++q; }
 		}
+		// An unclosed phrase that holds a glob character is read as plain words.
+		if (q >= e_ && glob_ && std::string_view(s, std::size_t(q - s)).find_first_of("*?") != std::string_view::npos) { return reparse(); }
 		std::vector<raw_word> words;
 		const char* t = s;
 		while (t < q) {
@@ -958,7 +951,7 @@ private:
 	void operand(node_id n, std::size_t offset, const char* end, bool plain, bool stop = false) {
 		const mark m = std::exchange(pending_, mark::none);
 		if (n == no_node && !std::exchange(stopped_, false)) { return; }
-		push_item({n, m, offset, std::size_t(end - b_), plain, stop, anchor_, solo_, kw_, quote_});
+		push_item({n, m, offset, std::size_t(end - b_), plain, stop, anchor_, solo_, kw_, quote_, false, std::exchange(alt_, no_node)});
 		anchor_ = solo_ = kw_ = quote_ = false;
 	}
 
@@ -1083,7 +1076,9 @@ private:
 	// The group's items become: required (+) items and, under AND, every loose element; the
 	// optional rest; the excluded (-) items. A run of adjacent plain words is one element.
 	node_id combine_items(std::size_t first) {
-		if (items_.size() - first == 1 && (items_[first].m == mark::none || (cfg_.stopper && items_[first].m == mark::minus))) { return items_[first].n; }
+		if (items_.size() - first == 1 && (items_[first].m == mark::none || ((cfg_.stopper || !boolean()) && items_[first].m == mark::minus))) {
+			return items_[first].m == mark::minus && items_[first].alt != no_node ? items_[first].alt : items_[first].n;
+		}
 		// With a stop list, a group of only exclusions reads as if none were marked.
 		const std::vector<item> saved(items_.begin() + std::ptrdiff_t(first), items_.end());
 		bool retry = false;
@@ -1099,7 +1094,13 @@ private:
 		const std::size_t end = items_.size();
 		if (demote) {
 			for (std::size_t i = first; i < end; ++i) {
-				if (items_[i].m == mark::minus) { items_[i].m = mark::none; }
+				item& x = items_[i];
+				if (x.m != mark::minus) { continue; }
+				x.m = mark::none;
+				if (x.alt != no_node) {
+					x.n = x.alt;
+					x.plain = true;
+				}
 			}
 		}
 		// A bracket of one stop word goes beside a heavy item (a non-stop word, or an operator word)
@@ -1147,7 +1148,7 @@ private:
 		}
 		std::vector<node_id> req, opt, exc;
 		const bool all_required = default_op_ == kind::and_;
-		if (cfg_.stopper && !demote) {
+		if ((cfg_.stopper || !boolean()) && !demote) {
 			// Exclusions need a positive item that is no stop word.
 			bool hate = false, solid = false;
 			for (std::size_t i = first; i < end; ++i) {
@@ -1189,7 +1190,7 @@ private:
 		const node_id x = fold(exc, kind::or_);
 		if (x != no_node) {
 			if (res == no_node && has(flag::pure_not)) { res = bld_.match_all_scaled(0); }
-			if (res == no_node && cfg_.stopper && !demote) {
+			if (res == no_node && (cfg_.stopper || !boolean()) && !demote) {
 				retry = true;
 				return no_node;
 			}
@@ -1253,7 +1254,6 @@ private:
 	bool expect_ = true;
 	bool failed_ = false;
 	bool reparse_ = false;
-	bool saw_op_ = false;
 	bool glob_ = false;
 	bool stopped_ = false;
 	bool anchor_ = false;
@@ -1261,6 +1261,9 @@ private:
 	bool kw_ = false;
 	bool quote_ = false;
 	bool lone_stop_ = false;
+	node_id alt_ = no_node;
+	bool call_ = false;  // a word glued to `(` was read
+	bool ket_ = false;   // a `)` was read
 	kind default_op_ = kind::or_;
 	mark pending_ = mark::none;
 	std::uint32_t termpos_ = 0;
@@ -1282,7 +1285,7 @@ parse_result parse(std::string_view text, const config& cfg) {
 		if (first.needs_reparse()) {
 			// Plain words: no operators and no expansion.
 			config plain = cfg;
-			plain.flags |= plain_quotes;
+			plain.flags |= plain_quotes | plain_brackets;
 			plain.flags &= ~(flag::lovehate | flag::boolean | flag::wildcard | flag::partial | flag::fuzzy | flag::wildcard_single | flag::wildcard_multi);
 			res = parse_result{};
 			parser(text, plain, res).run();

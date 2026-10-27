@@ -15,19 +15,8 @@ Kinds: `xapian-2.1` (2.1 differs from the 2.0 reference, Q5), `stemmer` (V2 used
 
 - 448 | open | -"a b" c: tracked
 - 467 | open | -a OR b: tracked
-- 1023 | open | a) b: tracked
-- 1035 | open | a (b) c): tracked
-- 1054 | open | a OR b) c: tracked
-- 1069 | open | a NEAR b): tracked
-- 1083 | open | a )b: tracked
-- 1146 | open | a (b) c): tracked
-- 1166 | open | )a*: tracked
-- 1170 | open | a (b) c): tracked
 - 1173 | open | (a "b c*: tracked
 - 1714 | open | -a OR b: tracked
-- 1728 | open | a OR b) c: tracked
-- 2181 | open | -the: tracked
-- 2189 | open | -a -an: tracked
 - 2311 | open | a~-1: tracked
 - 2551 | open | 中文AND分词: tracked
 - 2552 | open | "中文分词": tracked
