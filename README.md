@@ -32,30 +32,40 @@ r.tree.describe();                // Query(((Zbarack@1 AND (Zmichell@2 OR Zobama
 
 | Syntax | Flag | Result |
 |---|---|---|
-| `a b` | | the default operator (`or_`, or `and_` through `config::default_op`) |
-| `a AND b`, `OR`, `NOT`, `XOR`, `AND NOT`, `( )` | `boolean` | precedence XOR < AND/NOT, OR lowest |
-| `a NEAR b`, `a ADJ b`, `NEAR/n`, `ADJ/n` | `boolean` | window n + terms - 1, default n 10 |
+| `a b` | | the default operator (`config::default_op`: OR, AND, XOR, or one of NEAR, PHRASE, ELITE_SET, SYNONYM, MAX over the words) |
+| `a AND b`, `OR`, `NOT`, `XOR`, `AND NOT` | `boolean` | OR lowest, then XOR, then AND/NOT; juxtaposed items bind tighter than all of them |
+| `( )` | | groups; recognised with or without `boolean` |
+| `a NEAR b`, `a ADJ b`, `NEAR/n`, `ADJ/n` | `boolean` | window n + terms - 1, default n 10; outside a chain of plain words they are plain words |
 | `"a b"`, `a-b`, `a:b`, `a/b` | `phrase` | `PHRASE` over the words |
 | `+a`, `-a` | `lovehate` | required and excluded items: `(R AND_MAYBE O) AND_NOT X` |
-| `word*` | `wildcard` | `WILDCARD SYNONYM word`, no position |
+| `word*` | `wildcard` | `WILDCARD SYNONYM word`, one position |
+| `b?a`, `ba*c*`, `ba**` | `wildcard_single`, `wildcard_multi` | `WILDCARD SYNONYM` over the glob pattern |
 | the last word, at the end of the text | `partial` | `(WILDCARD SYNONYM word OR word@n)`, for words of two or more characters |
-| `word~`, `word~n` at the end | `fuzzy` | `EDIT_DISTANCE SYNONYM word~2` (or `~n`) |
+| `word~`, `word~n` at the end | `fuzzy` | `EDIT_DISTANCE SYNONYM word~2 fixed_prefix_len=N`, N the bytes of the term prefix |
 | runs of CJK, Thai, ... | `cjk_ngram` | unigrams and bigrams, ANDed at one position, never stemmed |
 | `NOT a`, a lone `-a` | `pure_not` | `(0 * <alldocuments> AND_NOT a)` |
 | `a and b` | `boolean_any_case` | `and`, `or`, `not`, `xor` in any case are operators |
 
-When NEAR or ADJ meets a word that `wildcard` or `partial` would expand, the whole text is
-read again as plain words (no `boolean`, `wildcard` or `partial`).
+Items that sit side by side form a group. Left operands flatten (`(a AND b) AND c` is one AND;
+`a AND (b AND c)` is not), and the words of a group that are stop words (`config::stopper`) go
+unless the group holds only stop words. A mixed NEAR/ADJ chain, an expanding operand of a chain,
+or a stray `)` after an operator reads the whole text again as plain words (no `boolean`,
+`wildcard`, `partial` or `fuzzy`; brackets stay).
+
+`config::default_prefix` is put before every term of a word that has no field;
+`config::{partial,wildcard,fuzzy}_expansion` are the caps (`max`, `limit`) that wildcard and
+edit-distance nodes carry for the engine that expands them.
 
 `config::resolver` maps a field name before `:` to a term prefix (`title:obama` becomes
 `Sobama`); without it `title:obama` is the phrase `title obama`.
 
 ## Status
 
-Steps 1 and 2 of the plan in strata `docs/design/queryparser.md`: every flag above, the
-stemming strategies, errors, and all 528 oracle rows of `parse.jsonl`. Stop words, default
-prefixes, glob wildcards (`?`), the other default operators and expansion limits come with
-step 3 (Xapiand's configurations); the extensions (escaping, boosts, slop, lenient errors) after.
+Steps 1 to 3 of the plan in strata `docs/design/queryparser.md`: every flag above, the stemming
+strategies, stop words, default prefixes, the other default operators, expansion caps, errors, all
+528 rows of `parse.jsonl` (T1) and Xapiand's configurations in `parse-v2.jsonl` (T2: 3,488 rows; the
+failing ones are tracked in `test/vectors/EXCEPTIONS-v2.md`). The extensions (escaping, boosts,
+slop, lenient errors) come after.
 
 ## Tests
 
@@ -64,7 +74,8 @@ cmake -S . -B build && cmake --build build && ctest --test-dir build
 ```
 
 - `queryparser_vectors`: the oracle rows in `test/vectors/parse.jsonl`, with exceptions in
-  `test/vectors/EXCEPTIONS.md`.
+  `test/vectors/EXCEPTIONS.md`. `queryparser_t2`: the rows of `parse-v2.jsonl` under the settings each
+  records, with `test/vectors/EXCEPTIONS-v2.md`.
 - `queryparser_test`: grammar tests. `queryparser_deep`: 10^6-level nesting on a 512 KiB stack.
 - `queryparser_random`: 1 MiB of random input. `QUERYPARSER_FUZZ=ON` adds the libFuzzer target.
 

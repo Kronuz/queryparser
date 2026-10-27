@@ -50,6 +50,8 @@ inline constexpr std::uint32_t fuzzy = 1u << 5;     // `word~` and `word~n` matc
 inline constexpr std::uint32_t cjk_ngram = 1u << 6;  // CJK, Thai and similar runs become unigram and bigram terms
 inline constexpr std::uint32_t pure_not = 1u << 7;   // `NOT a` and a lone `-a` match everything except a
 inline constexpr std::uint32_t boolean_any_case = 1u << 8;  // and, or, not, xor in any case are operators
+inline constexpr std::uint32_t wildcard_single = 1u << 9;   // `?` inside a word matches one character
+inline constexpr std::uint32_t wildcard_multi = 1u << 10;   // `*` inside or after a word, and `**`, match any run
 }  // namespace flag
 
 inline constexpr std::uint32_t default_flags = flag::boolean | flag::phrase | flag::lovehate;
@@ -66,10 +68,24 @@ enum class kind : std::uint8_t {
 	synonym,
 	elite_set,
 	max,
-	wildcard,       // text: pattern, matches terms starting with it
-	edit_distance,  // text: pattern, window: the edit distance
+	wildcard,       // text: pattern, matches terms starting with it (or a glob, see node::glob)
+	edit_distance,  // text: pattern, window: the edit distance, pos: the fixed prefix length
 	match_all,
 	scale,  // factor * its only child
+};
+
+// What a wildcard, partial or edit-distance word does when it matches more terms than the cap.
+enum class expansion_limit : std::uint8_t {
+	error,           // the match fails
+	first,           // the first terms in term order are used
+	most_frequent,   // the terms in most documents are used
+};
+
+// A cap on the terms one wildcard, partial or edit-distance word expands to (0: no cap). The
+// parser stores it on the node; the engine that expands the word enforces it.
+struct expansion {
+	std::uint32_t max = 0;
+	expansion_limit limit = expansion_limit::error;
 };
 
 using node_id = std::uint32_t;
@@ -78,16 +94,18 @@ inline constexpr node_id no_node = ~node_id(0);
 // A node of the tree. Children are a list: first child, then each child's `next`.
 struct node {
 	kind k = kind::term;
-	std::uint32_t pos = 0;     // term: position
+	bool solid = false;        // an op that never merges into a parent of the same kind
+	expansion_limit limit = expansion_limit::error;  // wildcard, edit_distance: what happens past max_expansion
+	std::uint32_t pos = 0;     // term: position; edit_distance: the fixed prefix length (the term prefix's bytes)
 	std::uint32_t wqf = 1;     // term: query frequency
 	std::uint32_t window = 0;  // near, phrase: window in positions; edit_distance: distance
-	double factor = 1;         // scale
-	bool solid = false;        // an op that never merges into a parent of the same kind
+	std::uint32_t max_expansion = 0;  // wildcard, edit_distance: cap on the terms it expands to (0: none)
 	std::uint32_t text_off = 0;
 	std::uint32_t text_len = 0;
 	node_id first = no_node;
 	node_id last = no_node;
 	node_id next = no_node;
+	double factor = 1;         // scale
 };
 
 // A parsed query. An empty query has no root and matches nothing.
@@ -111,6 +129,7 @@ private:
 
 enum class error_kind : std::uint8_t {
 	syntax,         // an operator lacks an operand, or a `-` follows OR, XOR or NOT
+	unsupported,    // an operator cannot take that operand (NEAR and PHRASE take terms only)
 	too_long,       // the text is over max_query_bytes, or its terms over config::max_term_bytes
 	out_of_memory,  // an allocation failed
 };
@@ -137,7 +156,13 @@ inline constexpr std::size_t max_term_bytes_limit = 0xFFFFFFFFu;
 struct config {
 	std::uint32_t flags = default_flags;
 	analysis::stem_strategy stem = analysis::stem_strategy::some;
-	kind default_op = kind::or_;  // or_, and_, xor_ or and_maybe
+	kind default_op = kind::or_;  // or_, and_, xor_, and_maybe, near, phrase, elite_set, synonym or max
+	const analysis::stopper* stopper = nullptr;  // none: no word is a stop word
+	analysis::stop_strategy stop = analysis::stop_strategy::stemmed;
+	std::string default_prefix;  // prepended to every term of a word without a field
+	expansion partial_expansion;
+	expansion wildcard_expansion;
+	expansion fuzzy_expansion;
 	snowball::stemmer* stemmer = nullptr;  // none: words are not stemmed
 	std::size_t max_word_length = 64;      // bytes after lowercasing; longer words are dropped (0 drops all);
 	                                       // a dropped word is no operand: `a AND <long word>` is a syntax error

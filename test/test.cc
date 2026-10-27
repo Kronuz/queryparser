@@ -54,7 +54,7 @@ int main() {
 	CHECK_EQ(P("((a b))"), "Query((a@1 OR b@2))");
 	CHECK_EQ(P("()"), "Query()");
 	CHECK_EQ(P(""), "Query()");
-	CHECK_EQ(P("a (b c)"), "Query((a@1 OR b@2 OR c@3))");
+	CHECK_EQ(P("a (b c)"), "Query((a@1 OR (b@2 OR c@3)))");
 	// Required, optional and excluded items.
 	CHECK_EQ(P("+a b"), "Query((a@1 AND_MAYBE b@2))");
 	CHECK_EQ(P("+a -b c"), "Query(((a@1 AND_MAYBE c@3) AND_NOT b@2))");
@@ -71,18 +71,18 @@ int main() {
 	CHECK_EQ(P("a NEAR/3 b"), "Query((a@1 NEAR 4 b@2))");
 	CHECK_EQ(P("a ADJ/2 b"), "Query((a@1 PHRASE 3 b@2))");
 	CHECK_EQ(P("a NEAR b NEAR c"), "Query((a@1 NEAR 12 b@2 NEAR 12 c@3))");
-	CHECK_EQ(P("a NEAR/0 b"), "Query((a@1 NEAR 1 b@2))");
-	CHECK_EQ(P("a NEAR/4294967295 b"), "Query((a@1 NEAR 4294967295 b@2))");
-	CHECK_EQ(P("x a NEAR b"), "Query((x@1 OR (a@2 NEAR 11 b@3)))");
-	CHECK_EQ(P("a-b NEAR c"), "Query((a@1 NEAR 12 b@2 NEAR 12 c@3))");
+	CHECK_EQ(P("a NEAR/0 b"), "Query((a@1 OR (near@2 PHRASE 2 0@3) OR b@4))");
+	CHECK_EQ(P("a NEAR/4294967295 b"), "Query((a@1 NEAR 2 b@2))");
+	CHECK_EQ(P("x a NEAR b"), "Query((x@1 OR a@2 OR near@3 OR b@4))");
+	CHECK_EQ(P("a-b NEAR c"), "Query(((a@1 PHRASE 2 b@2) OR (near@3 OR c@4)))");
 	// Errors.
 	CHECK_EQ(P("a AND"), "ERROR Syntax: <expression> AND <expression>");
 	CHECK_EQ(P("AND a"), "ERROR Syntax: <expression> AND <expression>");
 	CHECK_EQ(P("a OR OR b"), "ERROR Syntax: <expression> OR <expression>");
 	CHECK_EQ(P("-a"), "ERROR Syntax: <expression> NOT <expression>");
-	CHECK_EQ(P("a NEAR"), "ERROR Syntax: <expression> NEAR <expression>");
-	CHECK_EQ(P("NEAR a"), "ERROR Syntax: <expression> NEAR <expression>");
-	CHECK_EQ(P("a NEAR b ADJ c"), "ERROR Syntax: <expression> ADJ <expression>");
+	CHECK_EQ(P("a NEAR"), "Query((a@1 OR near@2))");
+	CHECK_EQ(P("NEAR a"), "Query((near@1 OR a@2))");
+	CHECK_EQ(P("a NEAR b ADJ c"), "Query((a@1 OR near@2 OR b@3 OR adj@4 OR c@5))");
 	CHECK_EQ(P("(a AND)"), "ERROR Syntax: <expression> AND <expression>");
 	{
 		const auto r = parse("ab NOT", plain());
@@ -116,7 +116,7 @@ int main() {
 	CHECK_EQ(P("+a AND b"), "Query((a@1 AND b@2))");
 	CHECK_EQ(P("a NOT +b"), "Query((a@1 AND_NOT b@2))");
 	CHECK_EQ(P("a NOT -b"), "ERROR Syntax: <expression> NOT <expression>");
-	CHECK_EQ(P("a AND NOT -b"), "ERROR Syntax: <expression> NOT <expression>");
+	CHECK_EQ(P("a AND NOT -b"), "ERROR Syntax: <expression> AND NOT <expression>");
 	// Not in V2: a `-` after OR or XOR is an error rather than a silent inclusion.
 	CHECK_EQ(P("a OR -b"), "ERROR Syntax: <expression> OR <expression>");
 	CHECK_EQ(P("a XOR -b"), "ERROR Syntax: <expression> XOR <expression>");
@@ -126,9 +126,9 @@ int main() {
 	CHECK_EQ(P("-" + std::string(70, 'a') + " b c"), "Query((b@1 OR c@2))");
 	CHECK_EQ(P("b +" + std::string(70, 'a') + " c"), "Query((b@1 OR c@2))");
 	// Window arithmetic: the distance digits clamp, so a huge NEAR/n cannot wrap.
-	CHECK_EQ(P("a NEAR/4294967296 b"), "Query((a@1 NEAR 4294967295 b@2))");
-	CHECK_EQ(P("a NEAR/99999999999999999999999999 b"), "Query((a@1 NEAR 4294967295 b@2))");
-	CHECK_EQ(P("a ADJ/18446744073709551617 b"), "Query((a@1 PHRASE 4294967295 b@2))");
+	CHECK_EQ(P("a NEAR/4294967296 b"), "Query((a@1 NEAR 11 b@2))");
+	CHECK_EQ(P("a NEAR/99999999999999999999999999 b"), "Query((a@1 NEAR 3825205248 b@2))");
+	CHECK_EQ(P("a ADJ/18446744073709551617 b"), "Query((a@1 PHRASE 2 b@2))");
 	{
 		config f = plain();
 		f.flags = default_flags | flag::fuzzy;
@@ -139,9 +139,9 @@ int main() {
 	{
 		config c = plain();
 		c.flags = 0;
-		CHECK_EQ(run("a AND (b) \"c d\" +e -f-g", c), "Query((a@1 OR and@2 OR b@3 OR c@4 OR d@5 OR e@6 OR f@7 OR g@8))");
+		CHECK_EQ(run("a AND (b) \"c d\" +e -f-g", c), "Query((a@1 OR and@2 OR b@3 OR (c@4 OR d@5) OR e@6 OR f@7 OR g@8))");
 		c.flags = flag::boolean;
-		CHECK_EQ(run("a AND b -c", c), "Query(((a@1 AND b@2) OR c@3))");
+		CHECK_EQ(run("a AND b -c", c), "Query((a@1 AND (b@2 OR c@3)))");
 		c.flags = flag::phrase;
 		CHECK_EQ(run("\"a b\" c-d AND", c), "Query(((a@1 PHRASE 2 b@2) OR (c@3 PHRASE 2 d@4) OR and@5))");
 		c.flags = flag::lovehate;
@@ -154,7 +154,7 @@ int main() {
 		CHECK_EQ(run("a b", c), "Query((a@1 AND b@2))");
 		CHECK_EQ(run("a b -c", c), "Query(((a@1 AND b@2) AND_NOT c@3))");
 		// V2 (precedence) differs from the next row: `a OR b c` is `(a OR (b AND c))`; T2 settles it.
-		CHECK_EQ(run("a OR b c", c), "Query(((a@1 OR b@2) AND c@3))");
+		CHECK_EQ(run("a OR b c", c), "Query((a@1 OR (b@2 AND c@3)))");
 		c.default_op = kind::xor_;
 		CHECK_EQ(run("a b", c), "Query((a@1 XOR b@2))");
 		// Marks with default AND: every unmarked item is required (V2, group plusminus).
@@ -164,7 +164,7 @@ int main() {
 		CHECK_EQ(run("a AND -b", c), "Query((a@1 AND_NOT b@2))");
 		// A default operator that is not one of the four is OR.
 		c.default_op = kind::near;
-		CHECK_EQ(run("a b", c), "Query((a@1 OR b@2))");
+		CHECK_EQ(run("a b c", c), "Query((a@1 NEAR 12 b@2 NEAR 12 c@3))");
 		c.default_op = kind::term;
 		CHECK_EQ(run("a b", c), "Query((a@1 OR b@2))");
 	}
@@ -253,8 +253,8 @@ int main() {
 		};
 		const config w = with(flag::wildcard), pa = with(flag::partial), fz = with(flag::fuzzy);
 		CHECK_EQ(run("obam*", w), "Query(WILDCARD SYNONYM obam)");
-		CHECK_EQ(run("Obam* foo", w), "Query((WILDCARD SYNONYM obam OR foo@1))");
-		CHECK_EQ(run("obam* AND x-y*", w), "Query((WILDCARD SYNONYM obam AND (x@1 PHRASE 2 y@2)))");
+		CHECK_EQ(run("Obam* foo", w), "Query((WILDCARD SYNONYM obam OR foo@2))");
+		CHECK_EQ(run("obam* AND x-y*", w), "Query((WILDCARD SYNONYM obam AND (x@2 OR WILDCARD SYNONYM y)))");
 		CHECK_EQ(run("obam*", plain()), "Query(obam@1)");
 		// Partial: only the last word, at the end of the text, of two or more characters.
 		CHECK_EQ(run("foo ba", pa), "Query((foo@1 OR (WILDCARD SYNONYM ba OR ba@2)))");
@@ -268,14 +268,14 @@ int main() {
 		// NEAR or ADJ next to an expanding word reads the text as plain words.
 		CHECK_EQ(run("foo NEAR bar", pa), "Query((foo@1 OR near@2 OR bar@3))");
 		CHECK_EQ(run("foo NEAR b", pa), "Query((foo@1 NEAR 11 b@2))");
-		CHECK_EQ(run("foo* ADJ bar", w), "Query((foo@1 OR adj@2 OR bar@3))");
+		CHECK_EQ(run("foo* ADJ bar", w), "Query((foo@1 OR (adj@2 OR bar@3)))");
 		CHECK_EQ(run("foo NEAR bar baz*", w), "Query(((foo@1 NEAR 11 bar@2) OR WILDCARD SYNONYM baz))");
 		CHECK_EQ(run("foo AND bar NEAR baz*", w), "Query((foo@1 OR and@2 OR bar@3 OR near@4 OR baz@5))");
 		// Fuzzy.
 		CHECK_EQ(run("ab~", fz), "Query(EDIT_DISTANCE SYNONYM ab~2)");
 		CHECK_EQ(run("Ab~1", fz), "Query(EDIT_DISTANCE SYNONYM ab~1)");
-		CHECK_EQ(run("(ab~) cd~ ef", fz), "Query((EDIT_DISTANCE SYNONYM ab~2 OR EDIT_DISTANCE SYNONYM cd~2 OR ef@1))");
-		CHECK_EQ(run("ab~1 cd", fz), "Query((ab@1 OR 1@2 OR cd@3))");
+		CHECK_EQ(run("(ab~) cd~ ef", fz), "Query((EDIT_DISTANCE SYNONYM ab~2 OR EDIT_DISTANCE SYNONYM cd~2 OR ef@3))");
+		CHECK_EQ(run("ab~1 cd", fz), "Query((ab@1 OR (1@2 OR cd@3)))");
 		CHECK_EQ(run("ab~x", fz), "Query((ab@1 OR x@2))");
 		CHECK_EQ(run("ab~", plain()), "Query(ab@1)");
 		// CJK n-grams.
@@ -298,6 +298,111 @@ int main() {
 		CHECK_EQ(run("a And b", ac), "Query((a@1 AND b@2))");
 		CHECK_EQ(run("a near b", ac), "Query((a@1 OR near@2 OR b@3))");
 		CHECK_EQ(run("a and b", plain()), "Query((a@1 OR and@2 OR b@3))");
+	}
+	// Step 3 (V2): juxtaposed items bind tighter than any explicit operator; only the left operand flattens.
+	{
+		config c = plain();
+		c.default_op = kind::and_;
+		CHECK_EQ(run("a OR b c", c), "Query((a@1 OR (b@2 AND c@3)))");
+		CHECK_EQ(run("a b OR c", c), "Query(((a@1 AND b@2) OR c@3))");
+		CHECK_EQ(run("a b XOR c d", c), "Query(((a@1 AND b@2) XOR (c@3 AND d@4)))");
+		CHECK_EQ(run("a NOT b c", c), "Query((a@1 AND_NOT (b@2 AND c@3)))");
+		CHECK_EQ(run("a AND (b AND c)", c), "Query((a@1 AND (b@2 AND c@3)))");
+		CHECK_EQ(run("a AND b c", c), "Query((a@1 AND (b@2 AND c@3)))");
+		CHECK_EQ(run("(a AND b) AND c", c), "Query((a@1 AND b@2 AND c@3))");
+		CHECK_EQ(run("a b AND c", c), "Query((a@1 AND b@2 AND c@3))");
+		CHECK_EQ(run("+a b c -d", c), "Query(((a@1 AND (b@2 AND c@3)) AND_NOT d@4))");
+		// A stray `)` after an operator reads the whole text as plain words, brackets kept.
+		CHECK_EQ(run("(a OR b)) AND c", c), "Query((a@1 AND or@2 AND b@3 AND (and@4 AND c@5)))");
+		CHECK_EQ(run("a OR )", c), "ERROR Syntax: <expression> OR <expression>");
+		// NEAR and ADJ are plain words outside a chain of two plain words.
+		CHECK_EQ(run("a NEAR b c", c), "Query((a@1 AND near@2 AND b@3 AND c@4))");
+		CHECK_EQ(run("NEAR a", c), "Query((near@1 AND a@2))");
+		CHECK_EQ(run("a NEAR/0 b", c), "Query((a@1 AND (near@2 PHRASE 2 0@3) AND b@4))");
+		CHECK_EQ(run("a-b NEAR c", c), "Query(((a@1 PHRASE 2 b@2) AND (near@3 AND c@4)))");
+		CHECK_EQ(run("a AND NEAR b", c), "ERROR Syntax: <expression> AND <expression>");
+		CHECK_EQ(run("a NEAR NEAR", c), "Query((a@1 AND near@2 AND near@3))");
+		CHECK_EQ(run("a NEAR/3 b NEAR/5 c", c), "Query((a@1 NEAR 7 b@2 NEAR 7 c@3))");
+		CHECK_EQ(run("a NEAR/3 b NEAR c", c), "Query((a@1 NEAR 5 b@2 NEAR 5 c@3))");
+		// The error names the tighter of two operators in a row.
+		CHECK_EQ(run("a OR AND b", c), "ERROR Syntax: <expression> AND <expression>");
+		CHECK_EQ(run("a AND NOT", c), "ERROR Syntax: <expression> AND NOT <expression>");
+		// CR2's shapes, still absent from V2: `a OR -b`, `a XOR -b` and `a AND NOT -b` are syntax errors,
+		// and `--b` is a plain word.
+		CHECK_EQ(run("a OR -b", c), "ERROR Syntax: <expression> OR <expression>");
+		CHECK_EQ(run("a XOR -b", c), "ERROR Syntax: <expression> XOR <expression>");
+		CHECK_EQ(run("a AND NOT -b", c), "ERROR Syntax: <expression> AND NOT <expression>");
+		CHECK_EQ(run("a AND --b", c), "Query((a@1 AND b@2))");
+	}
+	// Default operators other than AND and OR join the juxtaposed words (V2, group base).
+	{
+		config c = plain();
+		c.flags = flag::phrase | flag::lovehate;
+		c.default_op = kind::phrase;
+		CHECK_EQ(run("a b", c), "Query((a@1 PHRASE 11 b@2))");
+		c.default_op = kind::elite_set;
+		CHECK_EQ(run("a b c", c), "Query((a@1 ELITE_SET 10 b@2 ELITE_SET 10 c@3))");
+		c.default_op = kind::synonym;
+		CHECK_EQ(run("a b", c), "Query((a@1 SYNONYM b@2))");
+		c.default_op = kind::max;
+		CHECK_EQ(run("a-b c", c), "Query(((a@1 PHRASE 2 b@2) MAX c@3))");
+		c.default_op = kind::near;
+		CHECK_EQ(run("a-b c", c), "ERROR OP_NEAR and OP_PHRASE only currently support leaf subqueries");
+		CHECK_EQ(run("+a b", c), "Query((a@1 AND_MAYBE b@2))");
+	}
+	// The default prefix, edit distance with its fixed prefix, and the caps that nodes carry.
+	{
+		config c = plain();
+		c.flags |= flag::fuzzy | flag::wildcard | flag::partial;
+		c.default_prefix = "title.S";
+		c.fuzzy_expansion = {3, expansion_limit::first};
+		c.wildcard_expansion = {5, expansion_limit::most_frequent};
+		c.partial_expansion = {7, expansion_limit::error};
+		CHECK_EQ(run("obama~", c), "Query(EDIT_DISTANCE SYNONYM title.Sobama~2 fixed_prefix_len=7)");
+		CHECK_EQ(run("oba*", c), "Query(WILDCARD SYNONYM title.Soba)");
+		CHECK_EQ(run("a-b", c), "Query((title.Sa@1 PHRASE 2 title.Sb@2))");
+		const auto f = parse("obama~", c);
+		const auto& e = f.tree.at(f.tree.root());
+		CHECK_EQ(std::to_string(e.max_expansion) + "/" + std::to_string(int(e.limit)) + "/" + std::to_string(e.pos), "3/1/7");
+		const auto w = parse("oba*", c);
+		CHECK_EQ(std::to_string(w.tree.at(w.tree.root()).max_expansion) + "/" + std::to_string(int(w.tree.at(w.tree.root()).limit)), "5/2");
+		const auto p = parse("oba", c);
+		CHECK_EQ(std::to_string(p.tree.at(p.tree.at(p.tree.root()).first).max_expansion) + "/" + std::to_string(int(p.tree.at(p.tree.at(p.tree.root()).first).limit)), "7/0");
+		c.default_prefix.clear();
+		CHECK_EQ(run("obama~", c), "Query(EDIT_DISTANCE SYNONYM obama~2)");
+	}
+	// Glob wildcards.
+	{
+		config c = plain();
+		c.default_op = kind::and_;
+		c.flags |= flag::wildcard | flag::wildcard_single | flag::wildcard_multi;
+		CHECK_EQ(run("b?a ba* ba**", c), "Query((WILDCARD SYNONYM b?a AND WILDCARD SYNONYM ba* AND WILDCARD SYNONYM ba**))");
+		CHECK_EQ(run("??", c), "Query(WILDCARD SYNONYM ??)");
+		CHECK_EQ(run("the*cat", c), "Query(WILDCARD SYNONYM the*cat)");
+		CHECK_EQ(run("title:ba**", c), "Query((title@1 AND WILDCARD SYNONYM ba**))");
+		CHECK_EQ(run("a* NEAR b*", c), "Query((a@1 AND (near@2 AND b@3)))");
+		c.flags = default_flags | flag::wildcard;
+		CHECK_EQ(run("b?a ba*", c), "Query((b@1 AND a@2 AND WILDCARD SYNONYM ba))");
+	}
+	// Stop words: dropped from a run that has other words, kept alone or in a run of only stop words.
+	{
+		analysis::stopper stop{"the", "a", "an", "and", "of"};
+		config c = plain();
+		c.stopper = &stop;
+		c.default_op = kind::and_;
+		CHECK_EQ(run("the cat", c), "Query(cat@2)");
+		CHECK_EQ(run("the", c), "Query(the@1)");
+		CHECK_EQ(run("the a an", c), "Query((the@1 AND a@2 AND an@3))");
+		CHECK_EQ(run("the OR cat", c), "Query((the@1 OR cat@2))");
+		CHECK_EQ(run("cat and the dog", c), "Query((cat@1 AND dog@4))");
+		CHECK_EQ(run("\"cat of dog\"", c), "Query((cat@1 PHRASE 3 of@2 PHRASE 3 dog@3))");
+		CHECK_EQ(run("+the cat", c), "Query((the@1 AND cat@2))");
+		CHECK_EQ(run("-running", c), "Query(running@1)");
+		c.stop = analysis::stop_strategy::all;
+		CHECK_EQ(run("the cat", c), "Query(cat@2)");
+		CHECK_EQ(run("the OR cat", c), "Query(cat@2)");
+		CHECK_EQ(run("the NOT cat", c), "Query()");
+		CHECK_EQ(run("\"cat of dog\"", c), "Query((cat@1 PHRASE 3 dog@3))");
 	}
 	// An acronym chain that is not an acronym parses in linear time (the quadratic walk took 1.9 s here).
 	{
