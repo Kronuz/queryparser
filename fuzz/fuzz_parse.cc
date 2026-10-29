@@ -1,6 +1,7 @@
 // libFuzzer target: the first three bytes select flags, stemming, the default operator, a
 // field resolver and a term-text cap; the rest is the query. The tree must be consistent.
 #include "queryparser.hh"
+#include "../test/tree_check.hh"
 
 #include <cstddef>
 #include <cstdint>
@@ -41,17 +42,12 @@ extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size
 		return 0;
 	}
 	(void)r.tree.describe();
-	// Every node's text lies in the pool and every child index is a node; walk without recursion.
-	std::vector<queryparser::node_id> stack;
-	if (!r.tree.empty()) { stack.push_back(r.tree.root()); }
-	std::size_t visited = 0;
-	while (!stack.empty()) {
-		const auto id = stack.back();
-		stack.pop_back();
-		if (id >= r.tree.size() || ++visited > r.tree.size()) { std::abort(); }
-		const auto& n = r.tree.at(id);
+	// Every node is reached once from the root (no cycle, one parent), links stay inside the tree,
+	// and every node's text lies in the pool; walk without recursion.
+	if (!queryparser::well_formed(r.tree)) { std::abort(); }
+	for (std::size_t id = 0; id < r.tree.size(); ++id) {
+		const auto& n = r.tree.at(queryparser::node_id(id));
 		if (r.tree.text(n).size() != n.text_len) { std::abort(); }
-		for (auto c = n.first; c != queryparser::no_node; c = r.tree.at(c).next) { stack.push_back(c); }
 	}
 	return 0;
 }

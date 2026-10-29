@@ -25,8 +25,18 @@
 #include "unicode.hh"
 
 #include <cstdio>
+#include <cstdlib>
 #include <new>
 #include <utility>
+
+// Checked builds (the tests, the fuzz target, any build without NDEBUG) verify the tree as it is built.
+#ifndef QUERYPARSER_CHECKS
+#ifdef NDEBUG
+#define QUERYPARSER_CHECKS 0
+#else
+#define QUERYPARSER_CHECKS 1
+#endif
+#endif
 
 namespace queryparser {
 
@@ -163,6 +173,13 @@ public:
 		return push(n);
 	}
 
+	// A new leaf that reads as leaf does, so two parents never share one node.
+	node_id copy_leaf(node_id leaf) {
+		node n = q_.nodes_[leaf];
+		n.next = no_node;
+		return push(n);
+	}
+
 	void set_pos(node_id id, std::uint32_t pos) { q_.nodes_[id].pos = pos; }
 
 	node_id match_all_scaled(double factor) {
@@ -185,8 +202,13 @@ public:
 		return push(n);
 	}
 
-	// Appends c to the children of parent; c's own `next` is cleared.
+	// Appends c to the children of parent; c's own `next` is cleared. A node has one parent and
+	// appears once, or a child list could link back on itself: checked builds abort on a repeat.
 	void add(node_id parent, node_id c) {
+#if QUERYPARSER_CHECKS
+		if (c == parent || attached_[c]) { std::abort(); }
+		attached_[c] = true;
+#endif
 		node& p = q_.nodes_[parent];
 		q_.nodes_[c].next = no_node;
 		if (p.last == no_node) {
@@ -226,8 +248,14 @@ private:
 	node_id push(const node& n) {
 		if (q_.nodes_.size() >= no_node) { throw limit_exceeded{}; }
 		q_.nodes_.push_back(n);
+#if QUERYPARSER_CHECKS
+		attached_.push_back(false);
+#endif
 		return node_id(q_.nodes_.size() - 1);
 	}
+#if QUERYPARSER_CHECKS
+	std::vector<bool> attached_;  // the nodes some add() has made a child
+#endif
 	query& q_;
 	std::size_t max_pool_;
 };
@@ -835,7 +863,7 @@ private:
 			}
 			const node_id pair = bld_.op(kind::or_, 0, true);
 			bld_.add(pair, wc);
-			bld_.add(pair, t);
+			bld_.add(pair, bld_.copy_leaf(t));  // t itself stands for an exclusion that reads as unmarked
 			operand(pair, off(start), r, false);
 			return r;
 		}
@@ -1203,7 +1231,11 @@ private:
 			run_end[i - first] = j;
 			i = j;
 		}
+		// Collect the elements first: building a node extends its left operand in place, so a pass
+		// that may ask for a retry builds nothing until it knows it will not.
 		std::vector<node_id> req, opt, exc;
+		struct element { bool plus; std::vector<node_id> kids; };  // a + item, or an unmarked run
+		std::vector<element> elements;
 		const bool all_required = default_op_ == kind::and_;
 		if (cfg_.stopper && !demote) {
 			// Exclusions need a positive item that is no stop word.
@@ -1222,7 +1254,7 @@ private:
 			const item& x = items_[i];
 			const std::size_t j = run_end[i - first];
 			if (x.m == mark::plus) {
-				if (x.n != no_node) { req.push_back(x.n); }
+				if (x.n != no_node) { elements.push_back({true, {x.n}}); }
 			} else if (x.m == mark::minus) {
 				if (x.n != no_node) { exc.push_back(x.n); }
 			} else {
@@ -1230,11 +1262,22 @@ private:
 				for (std::size_t y = i; y < j; ++y) {
 					if (items_[y].n != no_node) { kids.push_back(items_[y].n); }
 				}
-				const node_id el = kids.size() <= 1 ? (kids.empty() ? no_node : kids[0]) : (all_required ? fold(kids, kind::and_) : join_run(kids));
-				if (failed_) { return no_node; }
-				if (el != no_node) { (all_required ? req : opt).push_back(el); }
+				if (!kids.empty()) { elements.push_back({false, std::move(kids)}); }
 			}
 			i = j;
+		}
+		if (!exc.empty() && elements.empty() && !has(flag::pure_not) && (cfg_.stopper || !boolean()) && !demote) {
+			retry = true;
+			return no_node;
+		}
+		for (const element& e : elements) {
+			if (e.plus) {
+				req.push_back(e.kids[0]);
+				continue;
+			}
+			const node_id el = e.kids.size() == 1 ? e.kids[0] : (all_required ? fold(e.kids, kind::and_) : join_run(e.kids));
+			if (failed_) { return no_node; }
+			if (el != no_node) { (all_required ? req : opt).push_back(el); }
 		}
 		node_id res = fold(req, kind::and_);
 		const node_id o = opt.empty() ? no_node : join_default(opt);
@@ -1247,10 +1290,6 @@ private:
 		const node_id x = fold(exc, kind::or_);
 		if (x != no_node) {
 			if (res == no_node && has(flag::pure_not)) { res = bld_.match_all_scaled(0); }
-			if (res == no_node && (cfg_.stopper || !boolean()) && !demote) {
-				retry = true;
-				return no_node;
-			}
 			if (res == no_node) {
 				fail_op("NOT", items_[first].offset);
 				return no_node;

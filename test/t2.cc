@@ -6,6 +6,7 @@
 // unreachable and excepted by itself.
 #include "jsonl.hh"
 #include "queryparser.hh"
+#include "tree_check.hh"
 
 #include <cctype>
 #include <cstdio>
@@ -213,6 +214,7 @@ int main(int argc, char** argv) {
 		cfg.wildcard_expansion = expansion_of(r, "wildcard");
 		cfg.fuzzy_expansion = expansion_of(r, "fuzzy");
 		const auto res = queryparser::parse(r.at("query"), cfg);
+		if (!res.err && !queryparser::well_formed(res.tree)) { std::fprintf(stderr, "malformed tree: %s\n", std::string(r.at("query")).c_str()); std::abort(); }
 		std::string got = res.err ? "ERROR " + res.err->message : res.tree.describe();
 		std::string want = r.at("error").empty() ? r.at("description") : "ERROR " + r.at("error");
 		// A row with an expansion outcome also pins what the node caps do against the database.

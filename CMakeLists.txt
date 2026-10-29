@@ -23,7 +23,7 @@ add_library(queryparser::queryparser ALIAS queryparser)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   enable_testing()
   # Checked containers turn an out-of-range access into an abort the tests see.
-  target_compile_definitions(queryparser PRIVATE _GLIBCXX_ASSERTIONS _LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE)
+  target_compile_definitions(queryparser PRIVATE _GLIBCXX_ASSERTIONS _LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE QUERYPARSER_CHECKS=1)
   add_executable(queryparser_test test/test.cc)
   target_link_libraries(queryparser_test PRIVATE queryparser)
   add_test(NAME queryparser COMMAND queryparser_test)

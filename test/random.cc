@@ -1,5 +1,6 @@
 // Random input: no crash and bounded memory on 1 MB of bytes, with and without syntax bias.
 #include "queryparser.hh"
+#include "tree_check.hh"
 
 #include <sys/resource.h>
 
@@ -32,6 +33,10 @@ int main() {
 			cfg.stem = analysis::stem_strategy(round % 4);
 			cfg.default_op = round & 1 ? queryparser::kind::and_ : queryparser::kind::or_;
 			auto r = queryparser::parse(s, cfg);
+			if (!r.err && !queryparser::well_formed(r.tree)) {
+				std::fprintf(stderr, "queryparser random: malformed tree, round %d flags %u\n", round, flags);
+				return EXIT_FAILURE;
+			}
 			checked += r.err ? 1 : r.tree.describe().size() > 0;
 		}
 	}

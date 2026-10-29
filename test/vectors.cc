@@ -3,6 +3,7 @@
 // skipped rows. A row is skipped when it needs a flag or setting not implemented yet.
 #include "jsonl.hh"
 #include "queryparser.hh"
+#include "tree_check.hh"
 
 #include <cstdio>
 #include <cstdlib>
@@ -63,6 +64,7 @@ int main(int argc, char** argv) {
 		cfg.stem = stems.at(r["stem"]);
 		cfg.stemmer = &english;
 		const auto res = queryparser::parse(r["query"], cfg);
+		if (!res.err && !queryparser::well_formed(res.tree)) { std::fprintf(stderr, "malformed tree: %s\n", std::string(r["query"]).c_str()); std::abort(); }
 		const std::string got = res.err ? "ERROR " + res.err->message : res.tree.describe();
 		const std::string want = r["error"].empty() ? r["description"] : "ERROR " + r["error"];
 		const std::string key = r["query"] + " | " + r["flags"] + " | " + r["stem"];

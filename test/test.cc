@@ -1,6 +1,7 @@
 // Grammar tests beyond the oracle vectors. Where Xapian's behaviour for a shape is not in
 // the vectors, the expected text records what this parser does (V2 will confirm it).
 #include "queryparser.hh"
+#include "tree_check.hh"
 
 #include <chrono>
 #include <cstdio>
@@ -22,6 +23,11 @@ using namespace queryparser;
 
 std::string run(std::string_view text, const config& cfg) {
 	const auto r = parse(text, cfg);
+	if (!r.err && !well_formed(r.tree)) {
+		std::fprintf(stderr, "%s:%d: malformed tree for %.*s\n", __FILE__, __LINE__, int(text.size()), text.data());
+		++failures;
+		return "MALFORMED";
+	}
 	return r.err ? "ERROR " + r.err->message : r.tree.describe();
 }
 
@@ -460,6 +466,17 @@ int main() {
 		config b = plain();
 		b.flags = flag::boolean | flag::lovehate;
 		CHECK_EQ(run("-a", b), "ERROR Syntax: <expression> NOT <expression>");
+	}
+	// LOVEHATE without BOOLEAN: a hated group asks for a re-read, which builds the same nodes
+	// again; a repeat once linked the last child of the group to itself.
+	{
+		config c = plain();
+		c.flags = flag::lovehate;
+		CHECK_EQ(run("-(a b) -c", c), "Query((a@1 OR b@2 OR c@3))");
+		CHECK_EQ(run("-(a b c) -d -e", c), "Query((a@1 OR b@2 OR c@3 OR d@4 OR e@5))");
+		CHECK_EQ(run("x -(a b) -c", c), "Query((x@1 AND_NOT (a@2 OR b@3 OR c@4)))");
+		c.default_op = kind::and_;
+		CHECK_EQ(run("-(a b) -c", c), "Query((a@1 AND b@2 AND c@3))");
 	}
 	std::printf("queryparser: %s\n", failures ? "FAILED" : "ok");
 	return failures ? EXIT_FAILURE : EXIT_SUCCESS;
