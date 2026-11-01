@@ -8,7 +8,7 @@ Kinds:
 - `2.1 versus 2.0`: the oracle is Xapian 2.1, the parser differs on purpose (Q5, and the owner's later ruling to judge each class on merit). Two causes: a capitalized word is stemmed under `some` as every word is (2.0 does; 2.1 leaves it as written, and the analysis library stems every word when it indexes, so a skipped query word loses the stem matches); a trailing `+` or `#` stays in the word (2.0 does, and the index keeps it; 2.1 drops it from a word of two or more characters).
 - `stemmer`: V2 used Xapian::Stem and the library uses snowball. None found.
 - `open`: a row that fails and is tracked. It counts as failed, is listed on every run, and does not fail the run;
-  a new failure, or an open row that now matches, does. The shapes are described in docs/status/queryparser.md.
+  a new failure, or an open row that now matches, does.
 
 - 30 | 2.1 versus 2.0 | barack XOR obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
 - 33 | 2.1 versus 2.0 | barack ADJ obama: a capitalized word is stemmed under `some` (2.0), the 2.1 oracle leaves it as written
