@@ -11,7 +11,7 @@ endif()
 
 include(FetchContent)
 # analysis: the word rules (word_scanner), stop words and, through it, unicode and snowball.
-FetchContent_Declare(analysis GIT_REPOSITORY https://github.com/Kronuz/analysis.git GIT_TAG 7d1814acd85bf09d9ae9ccd95a422173caf25617)
+FetchContent_Declare(analysis GIT_REPOSITORY https://github.com/Kronuz/analysis.git GIT_TAG 158c81b56a7976682672bfe1e491ffa6f219ad10)
 FetchContent_MakeAvailable(analysis)
 
 add_library(queryparser STATIC queryparser.cc)
