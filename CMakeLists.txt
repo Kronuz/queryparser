@@ -14,7 +14,7 @@ include(FetchContent)
 FetchContent_Declare(analysis GIT_REPOSITORY https://github.com/Kronuz/analysis.git GIT_TAG 158c81b56a7976682672bfe1e491ffa6f219ad10)
 FetchContent_MakeAvailable(analysis)
 
-add_library(queryparser STATIC queryparser.cc)
+add_library(queryparser STATIC queryparser.cc queryparser_describe.cc)
 target_include_directories(queryparser PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(queryparser PUBLIC cxx_std_20)
 target_link_libraries(queryparser PUBLIC analysis::analysis)

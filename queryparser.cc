@@ -20,11 +20,12 @@
  * THE SOFTWARE.
  */
 
+// parse(): query text to a tree of terms and operators, through the node builder and the iterative parser.
+
 #include "queryparser.hh"
 
 #include "unicode.hh"
 
-#include <cstdio>
 #include <cstdlib>
 #include <new>
 #include <utility>
@@ -39,112 +40,6 @@
 #endif
 
 namespace queryparser {
-
-namespace {
-
-const char* op_name(kind k) noexcept {
-	switch (k) {
-		case kind::and_: return "AND";
-		case kind::or_: return "OR";
-		case kind::and_not: return "AND_NOT";
-		case kind::xor_: return "XOR";
-		case kind::and_maybe: return "AND_MAYBE";
-		case kind::near: return "NEAR";
-		case kind::phrase: return "PHRASE";
-		case kind::synonym: return "SYNONYM";
-		case kind::elite_set: return "ELITE_SET";
-		case kind::max: return "MAX";
-		default: break;
-	}
-	return "";
-}
-
-// Appends s with control bytes as \xNN, as Xapian's descriptions show them.
-void escape(std::string& out, std::string_view s) {
-	for (unsigned char c : s) {
-		if (c < 0x20 || c == 0x7f) {
-			static const char hex[] = "0123456789abcdef";
-			out += "\\x";
-			out += hex[c >> 4];
-			out += hex[c & 15];
-		} else {
-			out += char(c);
-		}
-	}
-}
-
-}  // namespace
-
-std::string query::describe() const {
-	std::string out = "Query(";
-	if (root_ == no_node) { return out + ")"; }
-	struct frame {
-		node_id id;
-		node_id cursor;
-		bool paren;
-	};
-	std::vector<frame> stack;
-	// Prints a leaf, or opens the frame of an operator or scale.
-	auto enter = [&](node_id id) {
-		const node& n = nodes_[id];
-		switch (n.k) {
-			case kind::term:
-				escape(out, text(n));
-				out += '@';
-				out += std::to_string(n.pos);
-				break;
-			case kind::wildcard:
-				out += "WILDCARD SYNONYM ";
-				escape(out, text(n));
-				break;
-			case kind::edit_distance:
-				out += "EDIT_DISTANCE SYNONYM ";
-				escape(out, text(n));
-				out += '~';
-				out += std::to_string(n.window);
-				if (n.pos > 0) {
-					out += " fixed_prefix_len=";
-					out += std::to_string(n.pos);
-				}
-				break;
-			case kind::match_all: out += "<alldocuments>"; break;
-			case kind::scale: {
-				char buf[32];
-				std::snprintf(buf, sizeof buf, "%g", n.factor);
-				out += buf;
-				out += " * ";
-				stack.push_back({id, n.first, false});
-				break;
-			}
-			default:
-				out += '(';
-				stack.push_back({id, n.first, true});
-		}
-	};
-	enter(root_);
-	while (!stack.empty()) {
-		frame& f = stack.back();
-		const node& n = nodes_[f.id];
-		if (f.cursor == no_node) {
-			if (f.paren) { out += ')'; }
-			stack.pop_back();
-			continue;
-		}
-		const node_id child = f.cursor;
-		if (child != n.first) {
-			out += ' ';
-			out += op_name(n.k);
-			if (n.k == kind::near || n.k == kind::phrase || n.k == kind::elite_set) {
-				out += ' ';
-				out += std::to_string(n.window);
-			}
-			out += ' ';
-		}
-		f.cursor = nodes_[child].next;
-		enter(child);
-	}
-	return out + ")";
-}
 
 namespace {
 // Thrown when the term text or the node count would not fit the 32-bit links.
